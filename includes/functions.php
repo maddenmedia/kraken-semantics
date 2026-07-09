@@ -27,12 +27,26 @@ function kraken_semantics_default_settings() {
 		// Slug of the scan provider to use (see Kraken_Semantics_Scanner::providers()).
 		'provider'       => 'claude',
 
-		// Anthropic API key. Prefer the KRAKEN_SEMANTICS_ANTHROPIC_API_KEY
+		// Claude (Anthropic) API key. Prefer the KRAKEN_SEMANTICS_ANTHROPIC_API_KEY
 		// constant in wp-config.php — the constant always wins over this value.
 		'api_key'        => '',
 
 		// Claude model used by the built-in scanner.
 		'model'          => 'claude-opus-4-8',
+
+		// OpenAI API key. Prefer the KRAKEN_SEMANTICS_OPENAI_API_KEY
+		// constant in wp-config.php — the constant always wins over this value.
+		'openai_api_key' => '',
+
+		// OpenAI model (e.g., gpt-4o, gpt-4-turbo, gpt-4).
+		'openai_model'   => 'gpt-4o',
+
+		// Google Gemini API key. Prefer the KRAKEN_SEMANTICS_GEMINI_API_KEY
+		// constant in wp-config.php — the constant always wins over this value.
+		'gemini_api_key' => '',
+
+		// Gemini model (e.g., gemini-2.0-flash, gemini-1.5-pro).
+		'gemini_model'   => 'gemini-2.0-flash',
 
 		// Automatically queue a scan when a post is published or updated.
 		'auto_scan'      => false,

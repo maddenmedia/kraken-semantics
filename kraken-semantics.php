@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Kraken Semantics
  * Plugin URI:        https://github.com/maddenmedia/kraken-semantics
- * Description:       Store, scan, and display AI semantic confidence scores for any post type. Ships with a Claude-powered scanner, a REST API for external scoring tools, front-end badges, and WP-CLI commands.
+ * Description:       Store, scan, and display AI semantic confidence scores for any post type. AI-agnostic with Claude, OpenAI, and Gemini providers built-in. REST API, front-end badges, and WP-CLI commands included.
  * Version:           1.0.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
@@ -51,6 +51,8 @@ require_once KRAKEN_SEMANTICS_DIR . 'includes/functions.php';
 require_once KRAKEN_SEMANTICS_DIR . 'includes/class-scores.php';
 require_once KRAKEN_SEMANTICS_DIR . 'includes/providers/interface-kraken-semantics-provider.php';
 require_once KRAKEN_SEMANTICS_DIR . 'includes/providers/class-kraken-semantics-provider-claude.php';
+require_once KRAKEN_SEMANTICS_DIR . 'includes/providers/class-kraken-semantics-provider-openai.php';
+require_once KRAKEN_SEMANTICS_DIR . 'includes/providers/class-kraken-semantics-provider-gemini.php';
 require_once KRAKEN_SEMANTICS_DIR . 'includes/class-scanner.php';
 require_once KRAKEN_SEMANTICS_DIR . 'includes/class-rest-api.php';
 require_once KRAKEN_SEMANTICS_DIR . 'includes/class-frontend.php';

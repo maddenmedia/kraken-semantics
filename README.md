@@ -4,15 +4,16 @@ Store, scan, and display AI semantic confidence scores for any WordPress post ty
 
 ## Features
 
-- **AI-Powered Scanning**: Built-in Claude-based scanner that analyzes post content and generates semantic confidence scores
-- **Flexible Providers**: Extensible provider interface for custom AI models or external scoring services
+- **AI-Agnostic**: Choose between Claude (Anthropic), OpenAI (GPT), or Google Gemini — or add your own provider
+- **Multiple Built-in Providers**: Claude Opus, OpenAI GPT-4o, and Google Gemini 2.0 Flash included
 - **REST API**: Push scores from external tools, read scores, or trigger scans via authenticated endpoints
 - **Frontend Badges**: Automatically display confidence badges on your website with configurable styling
 - **WP-CLI Support**: Manage scans and settings from the command line
-- **Per-Dimension Scoring**: Break down confidence into specific dimensions (e.g., clarity, coherence, accuracy)
+- **Per-Dimension Scoring**: Break down confidence into specific dimensions (factual grounding, internal consistency, source attribution, specificity)
 - **Post Type Support**: Works with any custom post type, not just posts
 - **Auto-Scanning**: Optional automatic scanning when posts are published or updated
 - **Human Review Tracking**: Mark scores as reviewed by human editors
+- **Extensible**: Implement the provider interface to integrate custom AI services
 
 ## Requirements
 
@@ -36,31 +37,54 @@ Store, scan, and display AI semantic confidence scores for any WordPress post ty
 
 ## Configuration
 
-### API Key
+### Choosing a Provider
 
-Set your Anthropic API key in one of these ways:
+The plugin ships with three built-in AI providers. You can mix and match API keys:
 
-1. **Via wp-config.php (recommended)**:
-   ```php
-   define( 'KRAKEN_SEMANTICS_ANTHROPIC_API_KEY', 'your-api-key-here' );
-   ```
+#### Claude (Anthropic)
+```php
+define( 'KRAKEN_SEMANTICS_ANTHROPIC_API_KEY', 'sk-ant-...' );
+```
+Models: `claude-opus-4-8`, `claude-sonnet-5`, `claude-haiku-4-5-20251001`
 
-2. **Via the Settings page**: Settings → Kraken Semantics → API Key
+#### OpenAI (GPT)
+```php
+define( 'KRAKEN_SEMANTICS_OPENAI_API_KEY', 'sk-...' );
+```
+Models: `gpt-4o`, `gpt-4-turbo`, `gpt-4`
 
-The constant always takes precedence over the stored setting.
+#### Google Gemini
+```php
+define( 'KRAKEN_SEMANTICS_GEMINI_API_KEY', 'AIza...' );
+```
+Models: `gemini-2.0-flash`, `gemini-1.5-pro`, `gemini-1.5-flash`
 
 ### Settings
 
 Access plugin settings from **Settings → Kraken Semantics** in the WordPress admin:
 
 - **Post Types**: Select which post types can carry confidence scores
-- **Provider**: Choose the scanning provider (Claude or custom implementations)
-- **Model**: Select the Claude model to use (default: claude-opus-4-8)
+- **Provider**: Choose between Claude, OpenAI, or Gemini (default: Claude)
+- **Model**: Select the model for your chosen provider
+- **API Key**: Set the appropriate API key for your selected provider (or use wp-config.php constants)
 - **Auto-Scan**: Automatically queue a scan when posts are published/updated
 - **Display Badge**: Show confidence badges on the front-end automatically
 - **Badge Position**: Place badges before or after content
 - **Threshold: High**: Score threshold for "high" confidence (default: 80)
 - **Threshold: Low**: Score threshold for "low" confidence (default: 50)
+
+### API Key Security
+
+Always set API keys via wp-config.php constants — they're more secure than storing them in the database:
+
+```php
+// wp-config.php
+define( 'KRAKEN_SEMANTICS_ANTHROPIC_API_KEY', 'sk-ant-...' );
+define( 'KRAKEN_SEMANTICS_OPENAI_API_KEY', 'sk-...' );
+define( 'KRAKEN_SEMANTICS_GEMINI_API_KEY', 'AIza...' );
+```
+
+The constants take precedence over the Settings page if both are defined.
 
 ## Usage
 
@@ -331,11 +355,24 @@ This plugin is intentionally dependency-free. There is no `composer.json` or NPM
 
 ## Frequently Asked Questions
 
-**Q: Does this plugin store my API key securely?**
-A: The recommended approach is to define your API key in `wp-config.php` as a constant, which keeps it out of the database. If you store it in settings, it's stored in the database with no additional encryption—treat your WordPress database like a secret.
+**Q: Which AI provider should I use?**
+A: All three built-in providers (Claude, OpenAI, Gemini) produce good results. Choose based on:
+- **Cost**: Check current pricing for each service
+- **Speed**: GPT-4o and Gemini 2.0 Flash are often faster than Claude Opus
+- **Availability**: All three are widely available; pick whichever you already have an account for
+- **Model preferences**: Each provider offers different model families
 
-**Q: Can I use a different AI model?**
-A: Yes. In settings, choose any Claude model available through your Anthropic API account. Or implement the `Kraken_Semantics_Provider` interface to integrate a different service entirely.
+**Q: Can I switch providers later?**
+A: Yes, but note that scores are stored with the provider/model that created them. You can have posts scored by different providers over time—each score records which provider made it.
+
+**Q: Does this plugin store my API keys securely?**
+A: The recommended approach is to define your API keys in `wp-config.php` as constants, which keeps them out of the database. If you store them in settings, they're stored in the database with no additional encryption—treat your WordPress database like a secret.
+
+**Q: Can I use multiple providers?**
+A: Yes. You can define multiple API keys in `wp-config.php` and switch between them in Settings. You can also extend the plugin to call multiple providers per scan.
+
+**Q: Can I use a different model than the defaults?**
+A: Yes. In settings, choose any model available through your chosen provider's API account. The defaults are solid, but you can switch to faster/cheaper models anytime.
 
 **Q: What happens if the API call fails?**
 A: Failed scans are logged but don't block post publishing. If auto-scan is enabled and a scan fails, you can retry manually or via WP-CLI.
@@ -345,6 +382,9 @@ A: Yes. Select them in **Settings → Kraken Semantics → Post Types**.
 
 **Q: How are scores displayed on the front-end?**
 A: Scores appear as badges, styled with the confidence label (high/medium/low). You can customize the styling via CSS or disable automatic display and use the `kraken_semantics_badge()` template tag in your theme.
+
+**Q: Can I create a provider for my own AI service?**
+A: Yes. Implement the `Kraken_Semantics_Provider` interface (see "Extending the Plugin" section) to integrate any AI API. Your custom provider will appear in the Settings dropdown alongside the built-in ones.
 
 ## Support
 
