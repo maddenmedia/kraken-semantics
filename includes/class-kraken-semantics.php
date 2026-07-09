@@ -99,11 +99,37 @@ final class Kraken_Semantics {
 			$this->dashboard = new Kraken_Semantics_Dashboard( $this->scanner );
 			$this->settings  = new Kraken_Semantics_Settings( $this->scanner );
 			$this->admin     = new Kraken_Semantics_Admin( $this->scanner );
+
+			// Keep the plugin's own screens clear of unrelated admin notices
+			// that other plugins broadcast to every page.
+			add_action( 'in_admin_header', array( $this, 'silence_foreign_admin_notices' ), PHP_INT_MAX );
 		}
 
 		// WP-CLI commands (class is only loaded in CLI context).
 		if ( defined( 'WP_CLI' ) && WP_CLI && class_exists( 'Kraken_Semantics_CLI' ) ) {
 			WP_CLI::add_command( 'kraken-semantics', new Kraken_Semantics_CLI( $this->scanner ) );
 		}
+	}
+
+	/**
+	 * Strips other plugins' admin notices from Kraken Semantics screens.
+	 *
+	 * WordPress lets any plugin hook `admin_notices` and have its banner show
+	 * on every admin page. On our own dashboard and settings screens we clear
+	 * those hooks so the interface stays focused. The plugin registers no
+	 * admin notices of its own, so nothing of ours is lost. Fires on
+	 * `in_admin_header`, after every notice is registered but before the header
+	 * renders them.
+	 */
+	public function silence_foreign_admin_notices() {
+		$screen = get_current_screen();
+
+		if ( ! $screen || false === strpos( $screen->id, Kraken_Semantics_Dashboard::MENU_SLUG ) ) {
+			return;
+		}
+
+		remove_all_actions( 'admin_notices' );
+		remove_all_actions( 'all_admin_notices' );
+		remove_all_actions( 'user_admin_notices' );
 	}
 }
