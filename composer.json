@@ -1,0 +1,9 @@
+{
+	"name": "maddenmedia/kraken-semantics",
+	"description": "Kraken Semantics — semantic confidence scoring for WordPress content",
+	"type": "wordpress-plugin",
+	"license": "proprietary",
+	"require": {
+		"php": ">=7.4"
+	}
+}
