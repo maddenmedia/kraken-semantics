@@ -73,6 +73,13 @@ final class Kraken_Semantics {
 	public $admin;
 
 	/**
+	 * Optional Kraken Hub integration (admin only).
+	 *
+	 * @var Kraken_Semantics_Hub_Integration|null
+	 */
+	public $hub_integration;
+
+	/**
 	 * Returns the shared instance, creating it on first call.
 	 *
 	 * @return Kraken_Semantics
@@ -96,9 +103,10 @@ final class Kraken_Semantics {
 
 		// Admin-only components stay unloaded on the front end.
 		if ( is_admin() ) {
-			$this->dashboard = new Kraken_Semantics_Dashboard( $this->scanner );
-			$this->settings  = new Kraken_Semantics_Settings( $this->scanner );
-			$this->admin     = new Kraken_Semantics_Admin( $this->scanner );
+			$this->dashboard       = new Kraken_Semantics_Dashboard( $this->scanner );
+			$this->settings        = new Kraken_Semantics_Settings( $this->scanner );
+			$this->admin           = new Kraken_Semantics_Admin( $this->scanner );
+			$this->hub_integration = new Kraken_Semantics_Hub_Integration( $this->dashboard );
 
 			// Keep the plugin's own screens clear of unrelated admin notices
 			// that other plugins broadcast to every page.

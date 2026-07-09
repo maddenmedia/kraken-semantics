@@ -17,6 +17,7 @@ Discover how well your content hits the mark when AI reads it. Kraken Semantics 
 - **Auto-Scanning**: Optional automatic scanning when posts are published or updated
 - **Human Review Tracking**: Mark scores as reviewed by human editors
 - **Extensible**: Implement the provider interface to integrate custom AI services
+- **Kraken Hub Integration**: If [Kraken Core](https://github.com/maddenmedia/kraken-core) is also installed, Kraken Semantics automatically contributes a quick-link card and a live stats widget to the shared Kraken Hub dashboard — no configuration needed, and nothing changes if Kraken Core isn't present
 
 ## Requirements
 
@@ -98,6 +99,15 @@ define( 'KRAKEN_SEMANTICS_GEMINI_API_KEY', 'AIza...' );
 ```
 
 The constants take precedence over the Settings page if both are defined.
+
+## Kraken Hub Integration
+
+[Kraken Core](https://github.com/maddenmedia/kraken-core) provides a shared "Kraken Hub" admin landing page used by several Madden Media plugins. Kraken Semantics is fully standalone and doesn't require Kraken Core — but if Kraken Core happens to be active, Kraken Semantics automatically:
+
+- Adds a **quick-link card** to the Hub dashboard linking to its own Dashboard and Settings pages
+- Adds a **live stats widget** to the Hub showing the average score and coverage, so you can see AI-trust health across the whole Kraken Hub at a glance
+
+This requires no setup on either plugin — Kraken Semantics only listens for Kraken Core's `kraken-core/hub/quick_links` filter and `kraken-core/hub/dashboard_widgets` action, both of which are no-ops when Kraken Core isn't installed. Kraken Semantics's own **Kraken Semantics → Dashboard** menu is unaffected either way.
 
 ## Score locally with Claude Code (MCP)
 

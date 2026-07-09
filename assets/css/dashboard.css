@@ -555,6 +555,37 @@
 	opacity: 1;
 }
 
+/* --- Kraken Hub widget (shown on Kraken Core's Hub dashboard, if active) --------------- */
+
+.kraken-hubwidget {
+	max-width: none;
+}
+
+.kraken-hubwidget__head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 14px;
+}
+
+.kraken-hubwidget__link {
+	flex-shrink: 0;
+	font-size: 12.5px;
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.kraken-hubwidget__row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16px;
+}
+
+.kraken-hubwidget__tile {
+	flex: 1 1 220px;
+}
+
 /* --- Settings screen ------------------------------------------------------------------- */
 
 .kraken-settings {

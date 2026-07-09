@@ -546,10 +546,13 @@ class Kraken_Semantics_Dashboard {
 	/**
 	 * SVG ring meter for the average score.
 	 *
+	 * Public so the optional Kraken Hub widget can reuse it without
+	 * duplicating the SVG (see Kraken_Semantics_Hub_Integration).
+	 *
 	 * @param float  $score Score, 0–100.
 	 * @param string $band  Band slug for the ring color.
 	 */
-	protected function render_ring( $score, $band ) {
+	public function render_ring( $score, $band ) {
 		$radius        = 44;
 		$circumference = 2 * M_PI * $radius;
 		$arc           = $circumference * min( 100, max( 0, (float) $score ) ) / 100;

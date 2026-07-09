@@ -2,8 +2,8 @@
 /**
  * Plugin Name:       Kraken Semantics
  * Plugin URI:        https://github.com/maddenmedia/kraken-semantics
- * Description:       Score how confidently AI can trust your content, then rewrite and watch it improve. Insights dashboard, score history, Claude/OpenAI/Gemini providers, local scoring via MCP, REST API, front-end badges, and WP-CLI commands.
- * Version:           1.2.0
+ * Description:       Score how confidently AI can trust your content, then rewrite and watch it improve. Insights dashboard, score history, Claude/OpenAI/Gemini providers, local scoring via MCP, REST API, front-end badges, WP-CLI commands, and optional Kraken Hub integration.
+ * Version:           1.3.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Madden Media
@@ -28,7 +28,7 @@ defined( 'ABSPATH' ) || exit;
  */
 
 /** Current plugin version. Bump on release; used for cache-busting assets. */
-define( 'KRAKEN_SEMANTICS_VERSION', '1.2.0' );
+define( 'KRAKEN_SEMANTICS_VERSION', '1.3.0' );
 
 /** Absolute path to this file (used for activation hooks). */
 define( 'KRAKEN_SEMANTICS_FILE', __FILE__ );
@@ -59,6 +59,7 @@ require_once KRAKEN_SEMANTICS_DIR . 'includes/class-frontend.php';
 require_once KRAKEN_SEMANTICS_DIR . 'includes/class-settings.php';
 require_once KRAKEN_SEMANTICS_DIR . 'includes/class-dashboard.php';
 require_once KRAKEN_SEMANTICS_DIR . 'includes/class-admin.php';
+require_once KRAKEN_SEMANTICS_DIR . 'includes/class-hub-integration.php';
 require_once KRAKEN_SEMANTICS_DIR . 'includes/class-kraken-semantics.php';
 
 // WP-CLI commands are only needed (and only safe to load) in a CLI context.
