@@ -230,6 +230,13 @@ class Kraken_Semantics_Rest_Api {
 			return $result;
 		}
 
-		return rest_ensure_response( array_merge( array( 'post_id' => $post_id ), $result ) );
+		return rest_ensure_response(
+			array_merge(
+				array( 'post_id' => $post_id ),
+				$result,
+				// Per-provider results when parallel scoring ran; empty otherwise.
+				array( 'scores' => Kraken_Semantics_Scores::results( $post_id ) )
+			)
+		);
 	}
 }

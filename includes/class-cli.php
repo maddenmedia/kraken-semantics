@@ -98,6 +98,14 @@ class Kraken_Semantics_CLI {
 
 			$done++;
 			WP_CLI::log( "Post {$post_id}: {$result['score']} ({$result['label']})" );
+
+			// When parallel scoring ran, list each provider's score too.
+			$results = Kraken_Semantics_Scores::results( $post_id );
+			if ( count( $results ) > 1 ) {
+				foreach ( $results as $slug => $entry ) {
+					WP_CLI::log( "  - {$slug}: {$entry['score']} ({$entry['label']})" );
+				}
+			}
 		}
 
 		if ( $failed && ! $done ) {

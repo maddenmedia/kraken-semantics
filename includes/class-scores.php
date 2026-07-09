@@ -47,6 +47,16 @@ class Kraken_Semantics_Scores {
 	const META_HISTORY = '_kraken_semantics_history';
 
 	/**
+	 * Per-provider score map for parallel scoring:
+	 * slug => { score, breakdown, summary, model, scanned_at, label }.
+	 *
+	 * Holds the latest result from every provider a scan ran, including the
+	 * primary. The canonical single-score meta above still mirrors the primary
+	 * provider, so nothing that reads a single score has to change.
+	 */
+	const META_SCORES = '_kraken_semantics_scores';
+
+	/**
 	 * Hooks meta registration into init.
 	 */
 	public function __construct() {
@@ -134,6 +144,37 @@ class Kraken_Semantics_Scores {
 				),
 			)
 		);
+
+		// Per-provider score map (parallel scoring). Object of provider slug =>
+		// result object; exposed to REST for headless comparison views.
+		register_post_meta(
+			'',
+			self::META_SCORES,
+			array(
+				'type'          => 'object',
+				'single'        => true,
+				'auth_callback' => $auth,
+				'show_in_rest'  => array(
+					'schema' => array(
+						'type'                 => 'object',
+						'additionalProperties' => array(
+							'type'       => 'object',
+							'properties' => array(
+								'score'      => array( 'type' => 'number' ),
+								'label'      => array( 'type' => 'string' ),
+								'summary'    => array( 'type' => 'string' ),
+								'model'      => array( 'type' => 'string' ),
+								'scanned_at' => array( 'type' => 'string' ),
+								'breakdown'  => array(
+									'type'                 => 'object',
+									'additionalProperties' => array( 'type' => 'number' ),
+								),
+							),
+						),
+					),
+				),
+			)
+		);
 	}
 
 	/**
@@ -186,6 +227,65 @@ class Kraken_Semantics_Scores {
 		$history = get_post_meta( $post_id, self::META_HISTORY, true );
 
 		return is_array( $history ) ? array_values( $history ) : array();
+	}
+
+	/**
+	 * Returns the per-provider score map for a post (parallel scoring).
+	 *
+	 * @param int $post_id Post ID.
+	 * @return array<string,array<string,mixed>> Map of provider slug => result
+	 *                                            (score, label, breakdown,
+	 *                                            summary, model, scanned_at).
+	 *                                            Empty when never multi-scored.
+	 */
+	public static function results( $post_id ) {
+		$map = get_post_meta( $post_id, self::META_SCORES, true );
+
+		return is_array( $map ) ? $map : array();
+	}
+
+	/**
+	 * Records one provider's result into the per-provider score map.
+	 *
+	 * Unlike save(), this touches neither the canonical single-score meta nor
+	 * the history log — it only maintains the side map used for the parallel
+	 * scoring comparison. The canonical score is still written by save() for
+	 * the primary provider.
+	 *
+	 * @param int                 $post_id Post ID.
+	 * @param string              $slug    Provider slug.
+	 * @param array<string,mixed> $result  Provider result (score, breakdown,
+	 *                                      summary, model).
+	 */
+	public static function save_result( $post_id, $slug, array $result ) {
+		$slug = sanitize_key( $slug );
+
+		if ( '' === $slug || ! isset( $result['score'] ) || ! is_numeric( $result['score'] ) ) {
+			return;
+		}
+
+		$score     = self::clamp( $result['score'] );
+		$breakdown = array();
+
+		if ( isset( $result['breakdown'] ) && is_array( $result['breakdown'] ) ) {
+			foreach ( $result['breakdown'] as $dimension => $value ) {
+				if ( is_numeric( $value ) ) {
+					$breakdown[ sanitize_key( $dimension ) ] = self::clamp( $value );
+				}
+			}
+		}
+
+		$map          = self::results( $post_id );
+		$map[ $slug ] = array(
+			'score'      => $score,
+			'label'      => self::label_for( $score ),
+			'breakdown'  => $breakdown,
+			'summary'    => isset( $result['summary'] ) ? sanitize_textarea_field( (string) $result['summary'] ) : '',
+			'model'      => isset( $result['model'] ) ? sanitize_text_field( (string) $result['model'] ) : '',
+			'scanned_at' => gmdate( 'c' ),
+		);
+
+		update_post_meta( $post_id, self::META_SCORES, $map );
 	}
 
 	/**
@@ -339,6 +439,7 @@ class Kraken_Semantics_Scores {
 			self::META_SCANNED_AT,
 			self::META_REVIEWED,
 			self::META_HISTORY,
+			self::META_SCORES,
 		);
 	}
 

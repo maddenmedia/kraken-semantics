@@ -87,6 +87,47 @@ class Kraken_Semantics_Scanner {
 	}
 
 	/**
+	 * Returns the providers a scan should run: the primary provider plus any
+	 * configured "parallel" providers selected in settings.
+	 *
+	 * The primary provider is always first. Only registered, configured
+	 * providers are included, and the primary is never duplicated. With no
+	 * parallel providers set (the default), this is just the primary.
+	 *
+	 * @return array<string,Kraken_Semantics_Provider> Providers keyed by slug,
+	 *                                                  primary first.
+	 */
+	public function effective_providers() {
+		$primary = $this->active_provider();
+
+		if ( is_wp_error( $primary ) ) {
+			return array();
+		}
+
+		$providers = $this->providers();
+		$effective = array( $primary->get_id() => $primary );
+
+		$settings = kraken_semantics_get_settings();
+		$extra    = isset( $settings['parallel_providers'] ) ? (array) $settings['parallel_providers'] : array();
+
+		foreach ( $extra as $slug ) {
+			$slug = sanitize_key( $slug );
+
+			if ( $slug === $primary->get_id() || ! isset( $providers[ $slug ] ) || isset( $effective[ $slug ] ) ) {
+				continue;
+			}
+
+			// Silently skip extras that lost their API key; the primary scan
+			// still succeeds, and the settings screen flags the missing key.
+			if ( $providers[ $slug ]->is_configured() ) {
+				$effective[ $slug ] = $providers[ $slug ];
+			}
+		}
+
+		return $effective;
+	}
+
+	/**
 	 * Scans a post and stores the resulting score.
 	 *
 	 * This is the single entry point used by the REST API, the admin
@@ -105,18 +146,18 @@ class Kraken_Semantics_Scanner {
 			);
 		}
 
-		$provider = $this->active_provider();
-		if ( is_wp_error( $provider ) ) {
-			return $provider;
+		$primary = $this->active_provider();
+		if ( is_wp_error( $primary ) ) {
+			return $primary;
 		}
 
-		if ( ! $provider->is_configured() ) {
+		if ( ! $primary->is_configured() ) {
 			return new WP_Error(
 				'kraken_semantics_provider_unconfigured',
 				sprintf(
 					/* translators: %s: provider label. */
 					__( 'The provider "%s" is not configured yet.', 'kraken-semantics' ),
-					$provider->get_label()
+					$primary->get_label()
 				)
 			);
 		}
@@ -130,36 +171,76 @@ class Kraken_Semantics_Scanner {
 			);
 		}
 
-		$result = $provider->scan( $content, $post );
+		$primary_id = $primary->get_id();
+		$saved      = null;
 
-		if ( is_wp_error( $result ) ) {
-			return $result;
+		// Run the primary provider plus any configured parallel providers.
+		// Every result is recorded in the per-provider map; the primary's is
+		// also written as the canonical score. A failure from the primary is
+		// fatal; a failing parallel provider is logged and skipped so it can
+		// never take down the whole scan.
+		foreach ( $this->effective_providers() as $slug => $provider ) {
+			$result = $provider->scan( $content, $post );
+
+			if ( is_wp_error( $result ) ) {
+				if ( $slug === $primary_id ) {
+					return $result;
+				}
+
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+						sprintf(
+							'Kraken Semantics: parallel provider "%s" failed on post %d: %s',
+							$slug,
+							$post->ID,
+							$result->get_error_message()
+						)
+					);
+				}
+
+				continue;
+			}
+
+			// Side-map entry for every provider that scored (parallel view).
+			Kraken_Semantics_Scores::save_result( $post->ID, $slug, $result );
+
+			if ( $slug === $primary_id ) {
+				// The scanner — not the provider — owns persistence and bookkeeping.
+				$saved = Kraken_Semantics_Scores::save(
+					$post->ID,
+					array(
+						'score'      => $result['score'],
+						'breakdown'  => isset( $result['breakdown'] ) ? $result['breakdown'] : array(),
+						'summary'    => isset( $result['summary'] ) ? $result['summary'] : '',
+						'provider'   => $primary_id,
+						'model'      => isset( $result['model'] ) ? $result['model'] : '',
+						'scanned_at' => gmdate( 'c' ),
+						// A fresh machine score supersedes any earlier human review.
+						'reviewed'   => false,
+					)
+				);
+			}
 		}
 
-		// The scanner — not the provider — owns persistence and bookkeeping.
-		$saved = Kraken_Semantics_Scores::save(
-			$post->ID,
-			array(
-				'score'      => $result['score'],
-				'breakdown'  => isset( $result['breakdown'] ) ? $result['breakdown'] : array(),
-				'summary'    => isset( $result['summary'] ) ? $result['summary'] : '',
-				'provider'   => $provider->get_id(),
-				'model'      => isset( $result['model'] ) ? $result['model'] : '',
-				'scanned_at' => gmdate( 'c' ),
-				// A fresh machine score supersedes any earlier human review.
-				'reviewed'   => false,
-			)
-		);
-
-		if ( ! is_wp_error( $saved ) ) {
-			/**
-			 * Fires after a post has been scanned and its score stored.
-			 *
-			 * @param int                 $post_id Post ID.
-			 * @param array<string,mixed> $saved   The stored score record.
-			 */
-			do_action( 'kraken_semantics_post_scanned', $post->ID, $saved );
+		if ( is_wp_error( $saved ) ) {
+			return $saved;
 		}
+
+		if ( null === $saved ) {
+			// The primary is validated above, so this is defensive only.
+			return new WP_Error(
+				'kraken_semantics_scan_failed',
+				__( 'The scan did not produce a score.', 'kraken-semantics' )
+			);
+		}
+
+		/**
+		 * Fires after a post has been scanned and its score stored.
+		 *
+		 * @param int                 $post_id Post ID.
+		 * @param array<string,mixed> $saved   The stored score record.
+		 */
+		do_action( 'kraken_semantics_post_scanned', $post->ID, $saved );
 
 		return $saved;
 	}

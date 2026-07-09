@@ -25,7 +25,15 @@ function kraken_semantics_default_settings() {
 		'post_types'     => array( 'post' ),
 
 		// Slug of the scan provider to use (see Kraken_Semantics_Scanner::providers()).
+		// This is the "primary" provider: its score is the canonical one shown
+		// in the badge, the list column, and the REST/template-tag score.
 		'provider'       => 'claude',
+
+		// Optional extra providers to ALSO score with on each scan ("parallel"
+		// scoring). Each must have its own API key configured. The primary
+		// provider above is always scored and need not be listed here. Every
+		// extra provider is one more API call — and more cost — per scan.
+		'parallel_providers' => array(),
 
 		// Claude (Anthropic) API key. Prefer the KRAKEN_SEMANTICS_ANTHROPIC_API_KEY
 		// constant in wp-config.php — the constant always wins over this value.

@@ -121,6 +121,9 @@ class Kraken_Semantics_Admin {
 			echo '<p>' . esc_html__( 'This content has not been scored yet.', 'kraken-semantics' ) . '</p>';
 		}
 
+		// When parallel scoring has run, show every provider's score side by side.
+		$this->render_provider_comparison( $post->ID );
+
 		// Scan button — only when the active provider can actually run.
 		if ( ! is_wp_error( $provider ) && $provider->is_configured() ) {
 			printf(
@@ -225,6 +228,55 @@ class Kraken_Semantics_Admin {
 			}
 			echo '</p>';
 		}
+	}
+
+	/**
+	 * Renders the per-provider score comparison (parallel scoring).
+	 *
+	 * Only shown once at least two providers have scored the post. Reuses the
+	 * band chip styling from the summary; layout is inline so it needs no extra
+	 * stylesheet.
+	 *
+	 * @param int $post_id Post ID.
+	 */
+	protected function render_provider_comparison( $post_id ) {
+		$results = Kraken_Semantics_Scores::results( $post_id );
+
+		// Nothing to compare until more than one provider has scored.
+		if ( count( $results ) < 2 ) {
+			return;
+		}
+
+		$providers = $this->scanner->providers();
+
+		echo '<div class="kraken-semantics-compare" style="margin-top:12px;border-top:1px solid #e2e4e7;padding-top:10px;">';
+		echo '<p style="margin:0 0 6px;font-weight:600;">' . esc_html__( 'Provider comparison', 'kraken-semantics' ) . '</p>';
+
+		foreach ( $results as $slug => $entry ) {
+			$label = isset( $providers[ $slug ] ) ? $providers[ $slug ]->get_label() : $slug;
+			$score = isset( $entry['score'] ) ? (float) $entry['score'] : 0.0;
+			$band  = isset( $entry['label'] ) ? (string) $entry['label'] : Kraken_Semantics_Scores::label_for( $score );
+
+			$score_text = ( floor( $score ) === $score )
+				? number_format_i18n( $score )
+				: number_format_i18n( $score, 1 );
+
+			printf(
+				'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0;">
+					<span>%1$s</span>
+					<span style="display:flex;align-items:center;gap:6px;">
+						<span class="kraken-semantics-band kraken-semantics-band--%2$s"><i></i>%3$s</span>
+						<strong>%4$s</strong>
+					</span>
+				</div>',
+				esc_html( $label ),
+				esc_attr( $band ),
+				esc_html( ucfirst( $band ) ),
+				esc_html( $score_text )
+			);
+		}
+
+		echo '</div>';
 	}
 
 	/**

@@ -3,7 +3,7 @@
  * Plugin Name:       Kraken Semantics
  * Plugin URI:        https://github.com/maddenmedia/kraken-semantics
  * Description:       Score how confidently AI can trust your content, then rewrite and watch it improve. Insights dashboard, score history, Claude/OpenAI/Gemini providers, local scoring via MCP, REST API, front-end badges, and WP-CLI commands.
- * Version:           1.1.0
+ * Version:           1.2.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Madden Media
@@ -28,7 +28,7 @@ defined( 'ABSPATH' ) || exit;
  */
 
 /** Current plugin version. Bump on release; used for cache-busting assets. */
-define( 'KRAKEN_SEMANTICS_VERSION', '1.1.0' );
+define( 'KRAKEN_SEMANTICS_VERSION', '1.2.0' );
 
 /** Absolute path to this file (used for activation hooks). */
 define( 'KRAKEN_SEMANTICS_FILE', __FILE__ );

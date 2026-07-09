@@ -173,6 +173,29 @@ class Kraken_Semantics_Settings {
 			? sanitize_key( $input['provider'] )
 			: $defaults['provider'];
 
+		// Parallel providers: keep only known provider slugs that are not the
+		// primary and that actually have a key configured. Anything else (a
+		// stale slug, the primary, a keyless provider) is dropped.
+		$providers                   = $this->scanner->providers();
+		$submitted_parallel          = isset( $input['parallel_providers'] ) ? (array) $input['parallel_providers'] : array();
+		$clean['parallel_providers'] = array();
+
+		foreach ( $submitted_parallel as $slug ) {
+			$slug = sanitize_key( $slug );
+
+			if (
+				$slug === $clean['provider']
+				|| ! isset( $providers[ $slug ] )
+				|| in_array( $slug, $clean['parallel_providers'], true )
+			) {
+				continue;
+			}
+
+			if ( $providers[ $slug ]->is_configured() ) {
+				$clean['parallel_providers'][] = $slug;
+			}
+		}
+
 		// Per-provider keys and models. An empty key field means "keep the
 		// stored key" — otherwise admins would wipe a key every time they
 		// saved another setting. Models fall back to their defaults.
@@ -233,6 +256,7 @@ class Kraken_Semantics_Settings {
 					<h2 class="kraken-card__title"><?php esc_html_e( 'Scanning provider', 'kraken-semantics' ); ?></h2>
 					<p class="kraken-card__sub"><?php esc_html_e( 'Pick the AI service used by server-side scans. Each provider keeps its own API key and model.', 'kraken-semantics' ); ?></p>
 					<?php $this->field_providers( $settings ); ?>
+					<?php $this->field_parallel_providers( $settings ); ?>
 					<p class="description kraken-settings__mcp-note">
 						<?php
 						echo wp_kses_post(
@@ -382,6 +406,82 @@ class Kraken_Semantics_Settings {
 		echo '<p class="description">' .
 			esc_html__( 'For better security, define API keys as constants in wp-config.php instead of storing them here.', 'kraken-semantics' ) .
 			'</p>';
+	}
+
+	/**
+	 * Field: parallel-scoring provider checkboxes with a cost warning.
+	 *
+	 * Lets an editor pick extra providers to run alongside the primary on every
+	 * scan. Only providers with a configured key can be selected; the primary
+	 * always runs and is shown checked-and-disabled for context. The warning
+	 * appears once a scan would call more than one provider.
+	 *
+	 * @param array<string,mixed> $settings Current settings.
+	 */
+	protected function field_parallel_providers( $settings ) {
+		$providers = $this->scanner->providers();
+		$primary   = $settings['provider'];
+		$selected  = (array) $settings['parallel_providers'];
+
+		// How many providers a scan will actually call, to size the warning.
+		$run_count = 0;
+		foreach ( $providers as $slug => $provider ) {
+			if ( $slug === $primary || ( in_array( $slug, $selected, true ) && $provider->is_configured() ) ) {
+				$run_count++;
+			}
+		}
+
+		echo '<div class="kraken-settings__row">';
+		echo '<span class="kraken-settings__rowlabel">' . esc_html__( 'Parallel scoring', 'kraken-semantics' ) . '</span>';
+		echo '<div class="kraken-settings__rowbody">';
+		echo '<p class="description">' . esc_html__( 'Optionally score with additional providers on every scan, so you can compare how different LLMs rate the same content. The primary provider above is always scored.', 'kraken-semantics' ) . '</p>';
+
+		echo '<div class="kraken-checks">';
+		foreach ( $providers as $slug => $provider ) {
+			$is_primary = ( $slug === $primary );
+			$configured = $provider->is_configured();
+			$disabled   = $is_primary || ! $configured;
+			$checked    = $is_primary || in_array( $slug, $selected, true );
+
+			if ( $is_primary ) {
+				$note = ' <em>' . esc_html__( '(primary — always scored)', 'kraken-semantics' ) . '</em>';
+			} elseif ( ! $configured ) {
+				$note = ' <em>' . esc_html__( '(add an API key to enable)', 'kraken-semantics' ) . '</em>';
+			} else {
+				$note = '';
+			}
+
+			printf(
+				'<label class="kraken-check"><input type="checkbox" name="%1$s[parallel_providers][]" value="%2$s" %3$s %4$s> %5$s</label>',
+				esc_attr( self::OPTION ),
+				esc_attr( $slug ),
+				checked( $checked, true, false ),
+				disabled( $disabled, true, false ),
+				wp_kses_post( esc_html( $provider->get_label() ) . $note )
+			);
+		}
+		echo '</div>';
+
+		if ( $run_count > 1 ) {
+			printf(
+				'<p class="description kraken-settings__cost-warning">⚠️ <strong>%1$s</strong> %2$s</p>',
+				esc_html__( 'Heads up:', 'kraken-semantics' ),
+				esc_html(
+					sprintf(
+						/* translators: %d: number of providers a scan will call. */
+						_n(
+							'each scan will call %d provider, using its API and incurring its cost.',
+							'each scan will call %d providers, multiplying API usage and cost accordingly.',
+							$run_count,
+							'kraken-semantics'
+						),
+						$run_count
+					)
+				)
+			);
+		}
+
+		echo '</div></div>';
 	}
 
 	/**
