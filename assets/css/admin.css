@@ -1,0 +1,108 @@
+/**
+ * Kraken Semantics — admin styles.
+ *
+ * Covers the editor meta box (score summary + breakdown bars) and the
+ * posts-list column pill.
+ */
+
+/* --- Meta box: headline score ------------------------------------------- */
+
+.kraken-semantics-meta-score {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+	margin-bottom: 10px;
+}
+
+.kraken-semantics-meta-score__value {
+	font-size: 28px;
+	font-weight: 700;
+	line-height: 1;
+}
+
+.kraken-semantics-meta-score__label {
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+/* Band colors mirror the front-end badge. */
+.kraken-semantics-meta-score--high .kraken-semantics-meta-score__value,
+.kraken-semantics-meta-score--high .kraken-semantics-meta-score__label {
+	color: #15803d;
+}
+
+.kraken-semantics-meta-score--medium .kraken-semantics-meta-score__value,
+.kraken-semantics-meta-score--medium .kraken-semantics-meta-score__label {
+	color: #b45309;
+}
+
+.kraken-semantics-meta-score--low .kraken-semantics-meta-score__value,
+.kraken-semantics-meta-score--low .kraken-semantics-meta-score__label {
+	color: #b91c1c;
+}
+
+/* --- Meta box: breakdown bars ------------------------------------------- */
+
+.kraken-semantics-breakdown {
+	margin: 0 0 10px;
+}
+
+.kraken-semantics-breakdown li {
+	display: grid;
+	/* name | bar | value */
+	grid-template-columns: 1fr 70px 24px;
+	align-items: center;
+	gap: 6px;
+	margin-bottom: 4px;
+	font-size: 11px;
+}
+
+.kraken-semantics-breakdown__bar {
+	height: 6px;
+	overflow: hidden;
+	border-radius: 3px;
+	background: #e2e4e7;
+}
+
+.kraken-semantics-breakdown__bar span {
+	display: block;
+	height: 100%;
+	border-radius: 3px;
+	background: #2271b1; /* wp-admin accent blue */
+}
+
+.kraken-semantics-breakdown__value {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+.kraken-semantics-provenance {
+	font-style: italic;
+}
+
+/* --- Posts list: score pill ---------------------------------------------- */
+
+.kraken-semantics-pill {
+	display: inline-block;
+	min-width: 2.4em;
+	padding: 2px 8px;
+	border-radius: 999px;
+	color: #fff;
+	font-weight: 600;
+	font-size: 12px;
+	text-align: center;
+}
+
+.kraken-semantics-pill--high {
+	background: #15803d;
+}
+
+.kraken-semantics-pill--medium {
+	background: #b45309;
+}
+
+.kraken-semantics-pill--low {
+	background: #b91c1c;
+}

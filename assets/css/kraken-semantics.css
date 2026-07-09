@@ -1,0 +1,57 @@
+/**
+ * Kraken Semantics — front-end badge styles.
+ *
+ * The badge inherits the theme's typography and exposes its colors as custom
+ * properties, so a theme can re-skin it without overriding selectors:
+ *
+ *   .kraken-semantics-badge { --kraken-semantics-accent: rebeccapurple; }
+ */
+
+.kraken-semantics-badge {
+	/* Band color; overridden by the --high/--medium/--low modifiers below. */
+	--kraken-semantics-accent: #6b7280;
+
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5em;
+	margin: 1.5em 0;
+	padding: 0.4em 0.9em 0.4em 0.4em;
+	border: 1px solid color-mix(in srgb, var(--kraken-semantics-accent) 35%, transparent);
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--kraken-semantics-accent) 8%, transparent);
+	font-size: 0.85em;
+	line-height: 1.2;
+}
+
+/* The numeric score sits in a solid disc for at-a-glance reading. */
+.kraken-semantics-badge__score {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 2.1em;
+	height: 2.1em;
+	padding: 0 0.3em;
+	border-radius: 999px;
+	background: var(--kraken-semantics-accent);
+	color: #fff;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+
+.kraken-semantics-badge__text {
+	color: color-mix(in srgb, var(--kraken-semantics-accent) 75%, #000);
+	font-weight: 500;
+}
+
+/* Band modifiers — green / amber / red. */
+.kraken-semantics-badge--high {
+	--kraken-semantics-accent: #15803d;
+}
+
+.kraken-semantics-badge--medium {
+	--kraken-semantics-accent: #b45309;
+}
+
+.kraken-semantics-badge--low {
+	--kraken-semantics-accent: #b91c1c;
+}
