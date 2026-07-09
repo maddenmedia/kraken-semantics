@@ -56,8 +56,8 @@ class Kraken_Semantics_Dashboard {
 			'edit_posts',
 			self::MENU_SLUG,
 			array( $this, 'render_page' ),
-			$this->menu_icon(),
-			26 // Just below Comments.
+			KRAKEN_SEMANTICS_URL . 'assets/images/dashicon.svg',
+			81 // Matches the other Kraken plugins' shared position, directly below ACF.
 		);
 
 		add_submenu_page(
@@ -68,23 +68,6 @@ class Kraken_Semantics_Dashboard {
 			self::MENU_SLUG,
 			array( $this, 'render_page' )
 		);
-	}
-
-	/**
-	 * Returns the admin menu icon as a base64 SVG data URI.
-	 *
-	 * Base64 encoding matters: wp-admin's svg-painter recolors icons in this
-	 * format to match the admin color scheme.
-	 *
-	 * @return string Data URI.
-	 */
-	protected function menu_icon() {
-		// A simple kraken mark: a domed head with three curling tentacles.
-		$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">'
-			. '<path fill="black" d="M10 2a6 6 0 0 0-6 6v3.2c0 .9-.3 1.5-1 2.1-.4.4-.4 1 .1 1.3.9.5 2 .3 2.7-.4.3.7.3 1.5-.1 2.2-.3.5.1 1.1.7 1.1 1.3-.1 2.4-1 2.8-2.2.4.9.4 1.9-.1 2.8-.2.5.2 1 .7.9 1.6-.2 2.9-1.4 3.3-2.9.4 1.5 1.7 2.7 3.3 2.9.5.1.9-.4.7-.9-.5-.9-.5-1.9-.1-2.8.4 1.2 1.5 2.1 2.8 2.2.6 0 1-.6.7-1.1-.4-.7-.4-1.5-.1-2.2.7.7 1.8.9 2.7.4.5-.3.5-.9.1-1.3-.7-.6-1-1.2-1-2.1V8a6 6 0 0 0-6-6zm-2.5 5.5A1.25 1.25 0 1 1 7.5 10a1.25 1.25 0 0 1 0-2.5zm5 0A1.25 1.25 0 1 1 12.5 10a1.25 1.25 0 0 1 0-2.5z"/>'
-			. '</svg>';
-
-		return 'data:image/svg+xml;base64,' . base64_encode( $svg ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 	}
 
 	/**
