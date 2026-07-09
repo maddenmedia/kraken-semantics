@@ -215,8 +215,6 @@ class Kraken_Semantics_Scanner {
 						'provider'   => $primary_id,
 						'model'      => isset( $result['model'] ) ? $result['model'] : '',
 						'scanned_at' => gmdate( 'c' ),
-						// A fresh machine score supersedes any earlier human review.
-						'reviewed'   => false,
 					)
 				);
 			}
@@ -241,6 +239,11 @@ class Kraken_Semantics_Scanner {
 		 * @param array<string,mixed> $saved   The stored score record.
 		 */
 		do_action( 'kraken_semantics_post_scanned', $post->ID, $saved );
+
+		// Invalidated here (not via an admin-only hook) so it also runs for
+		// WP-CLI and REST-triggered scans, where Kraken_Semantics_Dashboard
+		// is never instantiated because is_admin() is false.
+		delete_transient( Kraken_Semantics_Dashboard::STATS_CACHE );
 
 		return $saved;
 	}

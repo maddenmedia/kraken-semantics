@@ -36,9 +36,6 @@ class Kraken_Semantics_Scores {
 	/** ISO 8601 GMT timestamp of the most recent scan. */
 	const META_SCANNED_AT = '_kraken_semantics_scanned_at';
 
-	/** '1' when a human has reviewed/approved the score; absent otherwise. */
-	const META_REVIEWED = '_kraken_semantics_reviewed';
-
 	/**
 	 * Score history: array of {score, scanned_at, provider, model} entries,
 	 * appended on every score write. Powers deltas ("did the rewrite help?")
@@ -83,7 +80,6 @@ class Kraken_Semantics_Scores {
 			self::META_PROVIDER   => 'string',
 			self::META_MODEL      => 'string',
 			self::META_SCANNED_AT => 'string',
-			self::META_REVIEWED   => 'boolean',
 		);
 
 		foreach ( $scalars as $key => $type ) {
@@ -211,7 +207,6 @@ class Kraken_Semantics_Scores {
 			'provider'   => (string) get_post_meta( $post_id, self::META_PROVIDER, true ),
 			'model'      => (string) get_post_meta( $post_id, self::META_MODEL, true ),
 			'scanned_at' => (string) get_post_meta( $post_id, self::META_SCANNED_AT, true ),
-			'reviewed'   => (bool) get_post_meta( $post_id, self::META_REVIEWED, true ),
 			'history'    => $history,
 			'delta'      => $delta,
 		);
@@ -292,11 +287,11 @@ class Kraken_Semantics_Scores {
 	 * Validates and persists a score record.
 	 *
 	 * Only the keys present in $data are written, so callers can update a
-	 * single field (e.g. the reviewed flag) without re-sending the rest.
+	 * single field without re-sending the rest.
 	 *
 	 * @param int                 $post_id Post ID.
 	 * @param array<string,mixed> $data    Any of: score, breakdown, summary,
-	 *                                     provider, model, scanned_at, reviewed.
+	 *                                     provider, model, scanned_at.
 	 * @return array<string,mixed>|WP_Error The stored record on success.
 	 */
 	public static function save( $post_id, array $data ) {
@@ -346,14 +341,6 @@ class Kraken_Semantics_Scores {
 			update_post_meta( $post_id, self::META_SCANNED_AT, sanitize_text_field( (string) $data['scanned_at'] ) );
 		} elseif ( array_key_exists( 'score', $data ) ) {
 			update_post_meta( $post_id, self::META_SCANNED_AT, gmdate( 'c' ) );
-		}
-
-		if ( array_key_exists( 'reviewed', $data ) ) {
-			if ( $data['reviewed'] ) {
-				update_post_meta( $post_id, self::META_REVIEWED, '1' );
-			} else {
-				delete_post_meta( $post_id, self::META_REVIEWED );
-			}
 		}
 
 		// Every score write is a scoring event worth remembering: append it
@@ -437,7 +424,6 @@ class Kraken_Semantics_Scores {
 			self::META_PROVIDER,
 			self::META_MODEL,
 			self::META_SCANNED_AT,
-			self::META_REVIEWED,
 			self::META_HISTORY,
 			self::META_SCORES,
 		);

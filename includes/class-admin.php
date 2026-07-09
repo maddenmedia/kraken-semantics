@@ -144,12 +144,6 @@ class Kraken_Semantics_Admin {
 			esc_html__( 'Manual score override', 'kraken-semantics' ),
 			esc_attr__( 'Leave blank to keep current score', 'kraken-semantics' )
 		);
-
-		printf(
-			'<p><label><input type="checkbox" name="kraken_semantics_reviewed" value="1" %1$s> %2$s</label></p>',
-			checked( $data ? $data['reviewed'] : false, true, false ),
-			esc_html__( 'A human has reviewed this score', 'kraken-semantics' )
-		);
 	}
 
 	/**
@@ -371,15 +365,6 @@ class Kraken_Semantics_Admin {
 			$updates['score']    = (float) $_POST['kraken_semantics_manual_score'];
 			$updates['provider'] = 'manual';
 			$updates['model']    = '';
-			// A manually entered score is by definition human-reviewed.
-			$updates['reviewed'] = true;
-		}
-
-		// The reviewed checkbox is always present in the form, so its absence
-		// in $_POST is a genuine "unchecked" — but only meaningful when the
-		// post already has a score.
-		if ( empty( $updates ) && null !== Kraken_Semantics_Scores::get( $post_id ) ) {
-			$updates['reviewed'] = ! empty( $_POST['kraken_semantics_reviewed'] );
 		}
 
 		if ( $updates ) {

@@ -207,7 +207,6 @@ function scoreFromMeta(meta) {
 		provider: meta._kraken_semantics_provider || '',
 		model: meta._kraken_semantics_model || '',
 		scanned_at: meta._kraken_semantics_scanned_at,
-		reviewed: Boolean(meta._kraken_semantics_reviewed),
 		times_scored: history.length,
 		// Change since the previous scoring event — the rewrite feedback loop.
 		delta:

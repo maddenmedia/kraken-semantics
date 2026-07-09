@@ -15,7 +15,6 @@ Discover how well your content hits the mark when AI reads it. Kraken Semantics 
 - **Per-Dimension Scoring**: Break down confidence into specific dimensions (factual grounding, internal consistency, source attribution, specificity)
 - **Post Type Support**: Works with any custom post type, not just posts
 - **Auto-Scanning**: Optional automatic scanning when posts are published or updated
-- **Human Review Tracking**: Mark scores as reviewed by human editors
 - **Extensible**: Implement the provider interface to integrate custom AI services
 - **Kraken Hub Integration**: If [Kraken Core](https://github.com/maddenmedia/kraken-core) is also installed, Kraken Semantics automatically contributes a quick-link card and a live stats widget to the shared Kraken Hub dashboard — no configuration needed, and nothing changes if Kraken Core isn't present
 
@@ -43,7 +42,7 @@ Discover how well your content hits the mark when AI reads it. Kraken Semantics 
 
 **Kraken Semantics → Dashboard** is the insight surface: how confidently can AI trust this site's content, where is it weakest, and is it getting better?
 
-- **Average score** ring, **coverage** (scored vs total posts), **band split** (High/Medium/Low), **human-reviewed** share, and **30-day change** across rescanned posts
+- **Average score** ring, **coverage** (scored vs total posts), **band split** (High/Medium/Low), and **30-day change** across rescanned posts
 - **Score distribution** histogram with your Low/Medium/High threshold ranges marked
 - **Average score over time** — a weekly trend of every scan in the last 12 weeks
 - **Confidence by dimension** — the lowest bar is where rewrites move the needle most
@@ -184,8 +183,7 @@ GET /wp-json/kraken-semantics/v1/posts/<id>/score
   },
   "provider": "claude",
   "model": "claude-opus-4-8",
-  "scanned_at": "2026-07-08T14:30:00Z",
-  "reviewed": false
+  "scanned_at": "2026-07-08T14:30:00Z"
 }
 ```
 
@@ -349,7 +347,6 @@ array(
     'provider'   => 'claude',     // Provider slug
     'model'      => 'claude-opus-4-8', // Model identifier
     'scanned_at' => '2026-07-08T14:30:00Z', // ISO 8601 timestamp (GMT)
-    'reviewed'   => false,        // Human review flag
     'history'    => array( ... ), // Past score events, oldest first (capped at 50)
     'delta'      => 6.5,          // Change vs the previous score event, or null
 )

@@ -41,8 +41,10 @@ class Kraken_Semantics_Dashboard {
 		add_action( 'admin_menu', array( $this, 'add_menu' ), 9 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 
-		// New scores make the cached aggregates stale.
-		add_action( 'kraken_semantics_post_scanned', array( $this, 'flush_stats_cache' ) );
+		// New scores make the cached aggregates stale. Scans themselves flush
+		// this from Kraken_Semantics_Scanner (works regardless of is_admin());
+		// this hook covers direct score writes that bypass the scanner, e.g.
+		// the manual-override field in the meta box.
 		add_action( 'save_post', array( $this, 'flush_stats_cache' ) );
 	}
 
@@ -146,7 +148,6 @@ class Kraken_Semantics_Dashboard {
 				"SELECT p.ID, p.post_title,
 				        score.meta_value     AS score,
 				        scanned.meta_value   AS scanned_at,
-				        reviewed.meta_value  AS reviewed,
 				        breakdown.meta_value AS breakdown,
 				        history.meta_value   AS history
 				 FROM {$wpdb->posts} p
@@ -154,8 +155,6 @@ class Kraken_Semantics_Dashboard {
 				         ON score.post_id = p.ID AND score.meta_key = %s
 				 LEFT JOIN {$wpdb->postmeta} scanned
 				        ON scanned.post_id = p.ID AND scanned.meta_key = %s
-				 LEFT JOIN {$wpdb->postmeta} reviewed
-				        ON reviewed.post_id = p.ID AND reviewed.meta_key = %s
 				 LEFT JOIN {$wpdb->postmeta} breakdown
 				        ON breakdown.post_id = p.ID AND breakdown.meta_key = %s
 				 LEFT JOIN {$wpdb->postmeta} history
@@ -165,7 +164,6 @@ class Kraken_Semantics_Dashboard {
 					array(
 						Kraken_Semantics_Scores::META_SCORE,
 						Kraken_Semantics_Scores::META_SCANNED_AT,
-						Kraken_Semantics_Scores::META_REVIEWED,
 						Kraken_Semantics_Scores::META_BREAKDOWN,
 						Kraken_Semantics_Scores::META_HISTORY,
 					),
@@ -179,7 +177,6 @@ class Kraken_Semantics_Dashboard {
 			'scored'         => 0,
 			'average'        => null,
 			'bands'          => array( 'high' => 0, 'medium' => 0, 'low' => 0 ),
-			'reviewed'       => 0,
 			'histogram'      => array_fill( 0, 10, 0 ),
 			'dimensions'     => array(), // slug => [sum, count]
 			'trend'          => array(), // week start (Y-m-d) => [sum, count]
@@ -202,10 +199,6 @@ class Kraken_Semantics_Dashboard {
 			$sum += $score;
 			$stats['bands'][ $label ]++;
 			$stats['histogram'][ min( 9, (int) floor( $score / 10 ) ) ]++;
-
-			if ( $row->reviewed ) {
-				$stats['reviewed']++;
-			}
 
 			$breakdown = maybe_unserialize( (string) $row->breakdown );
 			if ( is_array( $breakdown ) ) {
@@ -484,27 +477,7 @@ class Kraken_Semantics_Dashboard {
 		echo '</span>';
 		echo '</div>';
 
-		// Tile 4: human review.
-		$reviewed_pct = $stats['scored'] ? round( 100 * $stats['reviewed'] / $stats['scored'] ) : 0;
-		echo '<div class="kraken-tile">';
-		echo '<span class="kraken-tile__label">' . esc_html__( 'Human-reviewed', 'kraken-semantics' ) . '</span>';
-		printf(
-			'<span class="kraken-tile__value">%s<small>%%</small></span>',
-			esc_html( number_format_i18n( $reviewed_pct ) )
-		);
-		printf(
-			'<span class="kraken-tile__hint">%s</span>',
-			esc_html(
-				sprintf(
-					/* translators: %s: reviewed count. */
-					__( '%s scores approved by an editor', 'kraken-semantics' ),
-					number_format_i18n( $stats['reviewed'] )
-				)
-			)
-		);
-		echo '</div>';
-
-		// Tile 5: 30-day change from rescans.
+		// Tile 4: 30-day change from rescans.
 		echo '<div class="kraken-tile">';
 		echo '<span class="kraken-tile__label">' . esc_html__( '30-day change', 'kraken-semantics' ) . '</span>';
 		if ( null === $stats['net_change_30d'] ) {
