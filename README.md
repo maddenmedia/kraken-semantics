@@ -1,9 +1,12 @@
 # Kraken Semantics
 
-Store, scan, and display AI semantic confidence scores for any WordPress post type. Ships with a Claude-powered scanner, a REST API for external scoring tools, front-end badges, and WP-CLI commands.
+Discover how well your content hits the mark when AI reads it. Kraken Semantics gives every post a quantifiable semantic confidence score (0–100) with a per-dimension breakdown, so content teams — DMOs, publishers, anyone whose content needs to be trusted by AI search and answer engines — can find weak content, rewrite it, rescan it, and watch the score improve over time.
 
 ## Features
 
+- **Insights Dashboard**: Average score, coverage, band split, score distribution, per-dimension averages, a 12-week trend line, lowest-scoring "needs attention" posts, and the biggest post-rewrite improvements
+- **Score History & Deltas**: Every scan is logged per post — the editor shows the change since the last scan and a history sparkline, so the rewrite → rescan → improve loop is visible everywhere
+- **Score Locally with Claude Code (MCP)**: A bundled MCP server lets Claude Code score posts with cheap local Haiku agents — no AI API key stored in WordPress at all
 - **AI-Agnostic**: Choose between Claude (Anthropic), OpenAI (GPT), or Google Gemini — or add your own provider
 - **Multiple Built-in Providers**: Claude Opus, OpenAI GPT-4o, and Google Gemini 2.0 Flash included
 - **REST API**: Push scores from external tools, read scores, or trigger scans via authenticated endpoints
@@ -33,7 +36,17 @@ Store, scan, and display AI semantic confidence scores for any WordPress post ty
    wp plugin activate kraken-semantics
    ```
 
-3. Configure your API key and settings in the plugin settings page (Settings → Kraken Semantics)
+3. Configure your API key and settings in the plugin settings page (Kraken Semantics → Settings), or skip API keys entirely and [score locally with Claude Code](#score-locally-with-claude-code-mcp)
+
+## Dashboard
+
+**Kraken Semantics → Dashboard** is the insight surface: how confidently can AI trust this site's content, where is it weakest, and is it getting better?
+
+- **Average score** ring, **coverage** (scored vs total posts), **band split** (High/Medium/Low), **human-reviewed** share, and **30-day change** across rescanned posts
+- **Score distribution** histogram with your Low/Medium/High threshold ranges marked
+- **Average score over time** — a weekly trend of every scan in the last 12 weeks
+- **Confidence by dimension** — the lowest bar is where rewrites move the needle most
+- **Needs attention** (lowest scores, your rewrite candidates) and **biggest improvements** (rewrites that raised the score)
 
 ## Configuration
 
@@ -61,7 +74,7 @@ Models: `gemini-2.0-flash`, `gemini-1.5-pro`, `gemini-1.5-flash`
 
 ### Settings
 
-Access plugin settings from **Settings → Kraken Semantics** in the WordPress admin:
+Access plugin settings from **Kraken Semantics → Settings** in the WordPress admin:
 
 - **Post Types**: Select which post types can carry confidence scores
 - **Provider**: Choose between Claude, OpenAI, or Gemini (default: Claude)
@@ -85,6 +98,26 @@ define( 'KRAKEN_SEMANTICS_GEMINI_API_KEY', 'AIza...' );
 ```
 
 The constants take precedence over the Settings page if both are defined.
+
+## Score locally with Claude Code (MCP)
+
+Don't want to store an AI API key in WordPress or pay per-request API bills? The bundled MCP server (`mcp/server.mjs`, dependency-free Node) bridges Claude Code to your site's REST API: Claude Code lists your posts, reads their content, judges them locally against the same rubric the built-in providers use — ideally with cheap, fast **Haiku** subagents — and pushes the scores back.
+
+```bash
+claude mcp add kraken-semantics \
+  --env KRAKEN_WP_URL=https://example.com \
+  --env KRAKEN_WP_USER=admin \
+  --env KRAKEN_WP_APP_PASSWORD="xxxx xxxx xxxx xxxx xxxx xxxx" \
+  -- node /path/to/kraken-semantics/mcp/server.mjs
+```
+
+Then score everything unscored with parallel Haiku agents:
+
+```
+/score-posts
+```
+
+Scores land in the dashboard, meta box, and badges exactly like server-side scans, attributed to `claude-cli` and the model that judged them. Full setup, tool reference, and workflow details: [`mcp/README.md`](mcp/README.md).
 
 ## Usage
 
@@ -307,8 +340,12 @@ array(
     'model'      => 'claude-opus-4-8', // Model identifier
     'scanned_at' => '2026-07-08T14:30:00Z', // ISO 8601 timestamp (GMT)
     'reviewed'   => false,        // Human review flag
+    'history'    => array( ... ), // Past score events, oldest first (capped at 50)
+    'delta'      => 6.5,          // Change vs the previous score event, or null
 )
 ```
+
+Each history entry records `score`, `scanned_at`, `provider`, and `model`, so you can see how a post's score moved across rewrites and which model produced each score. The cap is filterable via `kraken_semantics_history_max`.
 
 ## Uninstallation
 

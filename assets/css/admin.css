@@ -1,46 +1,124 @@
 /**
  * Kraken Semantics — admin styles.
  *
- * Covers the editor meta box (score summary + breakdown bars) and the
- * posts-list column pill.
+ * Covers the editor meta box (gauge, delta, sparkline, breakdown bars) and
+ * the posts-list column (pill + trend arrow). Shares its palette with the
+ * dashboard: wp-admin accent blue for magnitude, band colors for status.
  */
 
-/* --- Meta box: headline score ------------------------------------------- */
+#kraken-semantics {
+	--kraken-accent: #2271b1;
+	--kraken-track: #d5e5f2;
+	--kraken-high: #15803d;
+	--kraken-medium: #b45309;
+	--kraken-low: #b91c1c;
+	--kraken-up: #006300;
+	--kraken-down: #b91c1c;
+	--kraken-ink: #1d2327;
+	--kraken-ink-2: #50575e;
+	--kraken-ink-3: #8c8f94;
+}
 
-.kraken-semantics-meta-score {
+/* --- Meta box: headline gauge + trend ------------------------------------- */
+
+.kraken-semantics-meta-head {
 	display: flex;
-	align-items: baseline;
-	gap: 8px;
-	margin-bottom: 10px;
+	align-items: center;
+	gap: 12px;
+	margin: 4px 0 12px;
 }
 
-.kraken-semantics-meta-score__value {
-	font-size: 28px;
-	font-weight: 700;
-	line-height: 1;
+.kraken-semantics-meta-head__side {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 5px;
 }
 
-.kraken-semantics-meta-score__label {
+.kraken-semantics-gauge {
+	--kraken-band-color: var(--kraken-ink-3);
+	width: 76px;
+	height: 76px;
+	flex-shrink: 0;
+}
+
+.kraken-semantics-gauge--high { --kraken-band-color: var(--kraken-high); }
+.kraken-semantics-gauge--medium { --kraken-band-color: var(--kraken-medium); }
+.kraken-semantics-gauge--low { --kraken-band-color: var(--kraken-low); }
+
+.kraken-semantics-gauge__track,
+.kraken-semantics-gauge__arc {
+	fill: none;
+	stroke-width: 7;
+}
+
+/* Track is a light step of the arc's own color, so state reads all around. */
+.kraken-semantics-gauge__track {
+	stroke: color-mix(in srgb, var(--kraken-band-color) 16%, #fff);
+}
+
+.kraken-semantics-gauge__arc {
+	stroke: var(--kraken-band-color);
+	stroke-linecap: round;
+}
+
+/* The number wears ink; the ring carries the band color. */
+.kraken-semantics-gauge__value {
+	fill: var(--kraken-ink);
+	font-size: 20px;
+	font-weight: 650;
+	text-anchor: middle;
+	dominant-baseline: middle;
+}
+
+/* Band chip: colored dot + ink text. */
+.kraken-semantics-band {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	color: var(--kraken-ink-2);
 	font-size: 12px;
 	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.04em;
 }
 
-/* Band colors mirror the front-end badge. */
-.kraken-semantics-meta-score--high .kraken-semantics-meta-score__value,
-.kraken-semantics-meta-score--high .kraken-semantics-meta-score__label {
-	color: #15803d;
+.kraken-semantics-band i {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--kraken-ink-3);
 }
 
-.kraken-semantics-meta-score--medium .kraken-semantics-meta-score__value,
-.kraken-semantics-meta-score--medium .kraken-semantics-meta-score__label {
-	color: #b45309;
+.kraken-semantics-band--high i { background: var(--kraken-high); }
+.kraken-semantics-band--medium i { background: var(--kraken-medium); }
+.kraken-semantics-band--low i { background: var(--kraken-low); }
+
+/* Change since the previous scan. */
+.kraken-semantics-delta {
+	font-size: 11.5px;
+	font-weight: 650;
 }
 
-.kraken-semantics-meta-score--low .kraken-semantics-meta-score__value,
-.kraken-semantics-meta-score--low .kraken-semantics-meta-score__label {
-	color: #b91c1c;
+.kraken-semantics-delta--up { color: var(--kraken-up); }
+.kraken-semantics-delta--down { color: var(--kraken-down); }
+
+/* History sparkline. */
+.kraken-semantics-spark {
+	width: 110px;
+	height: 30px;
+}
+
+.kraken-semantics-spark polyline {
+	fill: none;
+	stroke: var(--kraken-accent);
+	stroke-width: 1.5;
+	stroke-linejoin: round;
+	stroke-linecap: round;
+}
+
+.kraken-semantics-spark circle {
+	fill: var(--kraken-accent);
+	stroke: #fff;
+	stroke-width: 1.5;
 }
 
 /* --- Meta box: breakdown bars ------------------------------------------- */
@@ -55,34 +133,53 @@
 	grid-template-columns: 1fr 70px 24px;
 	align-items: center;
 	gap: 6px;
-	margin-bottom: 4px;
+	margin-bottom: 5px;
 	font-size: 11px;
+	color: var(--kraken-ink-2);
 }
 
 .kraken-semantics-breakdown__bar {
 	height: 6px;
 	overflow: hidden;
 	border-radius: 3px;
-	background: #e2e4e7;
+	background: var(--kraken-track);
 }
 
 .kraken-semantics-breakdown__bar span {
 	display: block;
 	height: 100%;
 	border-radius: 3px;
-	background: #2271b1; /* wp-admin accent blue */
+	background: var(--kraken-accent);
 }
 
 .kraken-semantics-breakdown__value {
 	text-align: right;
 	font-variant-numeric: tabular-nums;
+	font-weight: 600;
+	color: var(--kraken-ink);
 }
 
+.kraken-semantics-summary {
+	padding-top: 2px;
+}
+
+/* Provenance chips: provider · model · date. */
 .kraken-semantics-provenance {
-	font-style: italic;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin: 8px 0 4px;
 }
 
-/* --- Posts list: score pill ---------------------------------------------- */
+.kraken-semantics-provenance__chip {
+	padding: 1px 8px;
+	border-radius: 999px;
+	background: #f0f0f1;
+	color: var(--kraken-ink-2);
+	font-size: 11px;
+}
+
+/* --- Posts list: score pill + trend arrow ---------------------------------- */
 
 .kraken-semantics-pill {
 	display: inline-block;
@@ -93,16 +190,18 @@
 	font-weight: 600;
 	font-size: 12px;
 	text-align: center;
+	font-variant-numeric: tabular-nums;
 }
 
-.kraken-semantics-pill--high {
-	background: #15803d;
+.kraken-semantics-pill--high { background: #15803d; }
+.kraken-semantics-pill--medium { background: #b45309; }
+.kraken-semantics-pill--low { background: #b91c1c; }
+
+.kraken-semantics-colDelta {
+	margin-left: 4px;
+	font-size: 10px;
+	vertical-align: middle;
 }
 
-.kraken-semantics-pill--medium {
-	background: #b45309;
-}
-
-.kraken-semantics-pill--low {
-	background: #b91c1c;
-}
+.kraken-semantics-colDelta--up { color: #006300; }
+.kraken-semantics-colDelta--down { color: #b91c1c; }

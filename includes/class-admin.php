@@ -63,7 +63,8 @@ class Kraken_Semantics_Admin {
 	 * @param string $hook_suffix Current admin page hook.
 	 */
 	public function enqueue_assets( $hook_suffix ) {
-		if ( ! in_array( $hook_suffix, array( 'post.php', 'post-new.php' ), true ) ) {
+		// edit.php is the list table, where the score column renders.
+		if ( ! in_array( $hook_suffix, array( 'post.php', 'post-new.php', 'edit.php' ), true ) ) {
 			return;
 		}
 
@@ -129,7 +130,7 @@ class Kraken_Semantics_Admin {
 				esc_html__( 'Scan now', 'kraken-semantics' )
 			);
 		} else {
-			echo '<p class="description">' . esc_html__( 'Configure a provider under Settings → Kraken Semantics to enable scanning.', 'kraken-semantics' ) . '</p>';
+			echo '<p class="description">' . esc_html__( 'Configure a provider under Kraken Semantics → Settings to enable scanning.', 'kraken-semantics' ) . '</p>';
 		}
 
 		// Manual override — for editorial teams that score by hand or need
@@ -154,15 +155,38 @@ class Kraken_Semantics_Admin {
 	 * @param array<string,mixed> $data Score record.
 	 */
 	protected function render_score_summary( array $data ) {
+		echo '<div class="kraken-semantics-meta-head">';
+		$this->render_gauge( (float) $data['score'], $data['label'] );
+
+		echo '<div class="kraken-semantics-meta-head__side">';
 		printf(
-			'<div class="kraken-semantics-meta-score kraken-semantics-meta-score--%1$s">
-				<span class="kraken-semantics-meta-score__value">%2$s</span>
-				<span class="kraken-semantics-meta-score__label">%3$s</span>
-			</div>',
+			'<span class="kraken-semantics-band kraken-semantics-band--%1$s"><i></i>%2$s</span>',
 			esc_attr( $data['label'] ),
-			esc_html( $data['score'] ),
 			esc_html( ucfirst( $data['label'] ) )
 		);
+
+		// The rewrite loop, surfaced: change since the previous scan.
+		if ( null !== $data['delta'] && 0.0 !== (float) $data['delta'] ) {
+			$up = $data['delta'] > 0;
+			printf(
+				'<span class="kraken-semantics-delta kraken-semantics-delta--%1$s">%2$s %3$s</span>',
+				$up ? 'up' : 'down',
+				$up ? '&#9650;' : '&#9660;',
+				esc_html(
+					sprintf(
+						/* translators: %s: signed score change. */
+						__( '%s vs last scan', 'kraken-semantics' ),
+						( $up ? '+' : '−' ) . number_format_i18n( abs( $data['delta'] ), 1 )
+					)
+				)
+			);
+		}
+
+		if ( count( $data['history'] ) >= 2 ) {
+			$this->render_sparkline( $data['history'] );
+		}
+		echo '</div>';
+		echo '</div>';
 
 		// One bar per breakdown dimension.
 		if ( ! empty( $data['breakdown'] ) ) {
@@ -182,10 +206,10 @@ class Kraken_Semantics_Admin {
 		}
 
 		if ( $data['summary'] ) {
-			echo '<p class="description">' . esc_html( $data['summary'] ) . '</p>';
+			echo '<p class="description kraken-semantics-summary">' . esc_html( $data['summary'] ) . '</p>';
 		}
 
-		// Provenance line: who scored it, with what, and when.
+		// Provenance chips: who scored it, with what, and when.
 		$meta_bits = array_filter(
 			array(
 				$data['provider'],
@@ -195,8 +219,81 @@ class Kraken_Semantics_Admin {
 		);
 
 		if ( $meta_bits ) {
-			echo '<p class="description kraken-semantics-provenance">' . esc_html( implode( ' · ', $meta_bits ) ) . '</p>';
+			echo '<p class="kraken-semantics-provenance">';
+			foreach ( $meta_bits as $bit ) {
+				echo '<span class="kraken-semantics-provenance__chip">' . esc_html( $bit ) . '</span>';
+			}
+			echo '</p>';
 		}
+	}
+
+	/**
+	 * SVG ring gauge for the meta box headline score.
+	 *
+	 * @param float  $score Score, 0–100.
+	 * @param string $band  Band slug ('high', 'medium', 'low').
+	 */
+	protected function render_gauge( $score, $band ) {
+		$radius        = 30;
+		$circumference = 2 * M_PI * $radius;
+		$arc           = $circumference * min( 100, max( 0, $score ) ) / 100;
+
+		// Show "87" rather than "87.0", but keep a real decimal like "87.5".
+		$score_text = ( floor( $score ) === $score )
+			? number_format_i18n( $score )
+			: number_format_i18n( $score, 1 );
+
+		printf(
+			'<svg class="kraken-semantics-gauge kraken-semantics-gauge--%1$s" viewBox="0 0 76 76" role="img" aria-label="%2$s">
+				<circle class="kraken-semantics-gauge__track" cx="38" cy="38" r="%3$d"/>
+				<circle class="kraken-semantics-gauge__arc" cx="38" cy="38" r="%3$d"
+					stroke-dasharray="%4$.2f %5$.2f" transform="rotate(-90 38 38)"/>
+				<text class="kraken-semantics-gauge__value" x="38" y="40">%6$s</text>
+			</svg>',
+			esc_attr( $band ),
+			/* translators: %s: score. */
+			esc_attr( sprintf( __( 'Semantic confidence score: %s out of 100', 'kraken-semantics' ), $score_text ) ),
+			(int) $radius,
+			(float) $arc,
+			(float) ( $circumference - $arc ),
+			esc_html( $score_text )
+		);
+	}
+
+	/**
+	 * Tiny score-history sparkline: the post's improvement at a glance.
+	 *
+	 * @param array<int,array<string,mixed>> $history Score events, oldest first.
+	 */
+	protected function render_sparkline( array $history ) {
+		$history = array_slice( $history, -12 );
+		$n       = count( $history );
+		$width   = 110;
+		$height  = 30;
+		$pad     = 4;
+
+		$points = array();
+		foreach ( $history as $i => $event ) {
+			$x        = $pad + ( $width - 2 * $pad ) * ( $n > 1 ? $i / ( $n - 1 ) : 0.5 );
+			$y        = $pad + ( $height - 2 * $pad ) * ( 1 - min( 100, max( 0, (float) $event['score'] ) ) / 100 );
+			$points[] = sprintf( '%.1f,%.1f', $x, $y );
+		}
+
+		$last = explode( ',', end( $points ) );
+
+		printf(
+			'<svg class="kraken-semantics-spark" viewBox="0 0 %1$d %2$d" role="img" aria-label="%3$s">
+				<polyline points="%4$s"/>
+				<circle cx="%5$s" cy="%6$s" r="2.5"/>
+			</svg>',
+			(int) $width,
+			(int) $height,
+			/* translators: %d: number of scans. */
+			esc_attr( sprintf( __( 'Score history across %d scans', 'kraken-semantics' ), $n ) ),
+			esc_attr( implode( ' ', $points ) ),
+			esc_attr( $last[0] ),
+			esc_attr( $last[1] )
+		);
 	}
 
 	/**
@@ -285,6 +382,23 @@ class Kraken_Semantics_Admin {
 			esc_html( $data['score'] ),
 			esc_attr( $data['summary'] )
 		);
+
+		// Direction of travel since the previous scan, when there is one.
+		if ( null !== $data['delta'] && 0.0 !== (float) $data['delta'] ) {
+			$up = $data['delta'] > 0;
+			printf(
+				'<span class="kraken-semantics-colDelta kraken-semantics-colDelta--%1$s" title="%3$s">%2$s</span>',
+				$up ? 'up' : 'down',
+				$up ? '&#9650;' : '&#9660;',
+				esc_attr(
+					sprintf(
+						/* translators: %s: signed score change. */
+						__( '%s since the previous scan', 'kraken-semantics' ),
+						( $up ? '+' : '' ) . $data['delta']
+					)
+				)
+			);
+		}
 	}
 
 	/**

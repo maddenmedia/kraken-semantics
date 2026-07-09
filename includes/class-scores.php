@@ -40,6 +40,13 @@ class Kraken_Semantics_Scores {
 	const META_REVIEWED = '_kraken_semantics_reviewed';
 
 	/**
+	 * Score history: array of {score, scanned_at, provider, model} entries,
+	 * appended on every score write. Powers deltas ("did the rewrite help?")
+	 * and the over-time charts.
+	 */
+	const META_HISTORY = '_kraken_semantics_history';
+
+	/**
 	 * Hooks meta registration into init.
 	 */
 	public function __construct() {
@@ -102,6 +109,31 @@ class Kraken_Semantics_Scores {
 				),
 			)
 		);
+
+		// History is an append-only log of past score events.
+		register_post_meta(
+			'',
+			self::META_HISTORY,
+			array(
+				'type'          => 'array',
+				'single'        => true,
+				'auth_callback' => $auth,
+				'show_in_rest'  => array(
+					'schema' => array(
+						'type'  => 'array',
+						'items' => array(
+							'type'       => 'object',
+							'properties' => array(
+								'score'      => array( 'type' => 'number' ),
+								'scanned_at' => array( 'type' => 'string' ),
+								'provider'   => array( 'type' => 'string' ),
+								'model'      => array( 'type' => 'string' ),
+							),
+						),
+					),
+				),
+			)
+		);
 	}
 
 	/**
@@ -122,6 +154,13 @@ class Kraken_Semantics_Scores {
 
 		$score     = (float) $score;
 		$breakdown = get_post_meta( $post_id, self::META_BREAKDOWN, true );
+		$history   = self::history( $post_id );
+
+		// Delta against the previous score event: the last history entry is
+		// the current score, so the one before it is "what it was before".
+		$delta = count( $history ) >= 2
+			? round( $score - (float) $history[ count( $history ) - 2 ]['score'], 1 )
+			: null;
 
 		return array(
 			'score'      => $score,
@@ -132,7 +171,21 @@ class Kraken_Semantics_Scores {
 			'model'      => (string) get_post_meta( $post_id, self::META_MODEL, true ),
 			'scanned_at' => (string) get_post_meta( $post_id, self::META_SCANNED_AT, true ),
 			'reviewed'   => (bool) get_post_meta( $post_id, self::META_REVIEWED, true ),
+			'history'    => $history,
+			'delta'      => $delta,
 		);
+	}
+
+	/**
+	 * Returns the score history for a post, oldest first.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return array<int,array<string,mixed>> History entries.
+	 */
+	public static function history( $post_id ) {
+		$history = get_post_meta( $post_id, self::META_HISTORY, true );
+
+		return is_array( $history ) ? array_values( $history ) : array();
 	}
 
 	/**
@@ -203,7 +256,45 @@ class Kraken_Semantics_Scores {
 			}
 		}
 
+		// Every score write is a scoring event worth remembering: append it
+		// to the history log so deltas and over-time charts have data.
+		if ( array_key_exists( 'score', $data ) ) {
+			self::append_history( $post_id );
+		}
+
 		return self::get( $post_id );
+	}
+
+	/**
+	 * Appends the post's just-stored score to its history log.
+	 *
+	 * Reads back the freshly written meta (rather than trusting the caller's
+	 * partial $data) so the entry always reflects what is actually stored.
+	 *
+	 * @param int $post_id Post ID.
+	 */
+	protected static function append_history( $post_id ) {
+		$history = self::history( $post_id );
+
+		$history[] = array(
+			'score'      => (float) get_post_meta( $post_id, self::META_SCORE, true ),
+			'scanned_at' => (string) get_post_meta( $post_id, self::META_SCANNED_AT, true ),
+			'provider'   => (string) get_post_meta( $post_id, self::META_PROVIDER, true ),
+			'model'      => (string) get_post_meta( $post_id, self::META_MODEL, true ),
+		);
+
+		/**
+		 * Filters how many history entries are kept per post.
+		 *
+		 * @param int $max_entries Cap on stored score events (default 50).
+		 */
+		$max = max( 1, (int) apply_filters( 'kraken_semantics_history_max', 50 ) );
+
+		if ( count( $history ) > $max ) {
+			$history = array_slice( $history, -$max );
+		}
+
+		update_post_meta( $post_id, self::META_HISTORY, $history );
 	}
 
 	/**
@@ -247,6 +338,7 @@ class Kraken_Semantics_Scores {
 			self::META_MODEL,
 			self::META_SCANNED_AT,
 			self::META_REVIEWED,
+			self::META_HISTORY,
 		);
 	}
 

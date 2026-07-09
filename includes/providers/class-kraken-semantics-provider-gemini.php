@@ -79,7 +79,7 @@ class Kraken_Semantics_Provider_Gemini implements Kraken_Semantics_Provider {
 		if ( ! $this->is_configured() ) {
 			return new WP_Error(
 				'kraken_semantics_no_api_key',
-				__( 'No Google Gemini API key is configured. Add one under Settings → Kraken Semantics, or define KRAKEN_SEMANTICS_GEMINI_API_KEY in wp-config.php.', 'kraken-semantics' )
+				__( 'No Google Gemini API key is configured. Add one under Kraken Semantics → Settings, or define KRAKEN_SEMANTICS_GEMINI_API_KEY in wp-config.php.', 'kraken-semantics' )
 			);
 		}
 

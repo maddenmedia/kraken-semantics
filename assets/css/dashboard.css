@@ -1,0 +1,775 @@
+/**
+ * Kraken Semantics — dashboard styles.
+ *
+ * Design tokens up top; everything below references them. The palette pairs
+ * wp-admin's accent blue (charts, single-hue magnitude) with the plugin's
+ * band status colors (always accompanied by text labels, never color alone).
+ */
+
+.kraken-dash {
+	--kraken-accent: #2271b1;       /* wp-admin blue: all magnitude marks */
+	--kraken-accent-dark: #135e96;
+	--kraken-track: #d5e5f2;        /* lighter step of the accent ramp */
+	--kraken-high: #15803d;
+	--kraken-medium: #b45309;
+	--kraken-low: #b91c1c;
+	--kraken-up: #006300;
+	--kraken-down: #b91c1c;
+	--kraken-ink: #1d2327;
+	--kraken-ink-2: #50575e;
+	--kraken-ink-3: #8c8f94;
+	--kraken-hairline: #dcdcde;
+	--kraken-grid: #eceded;
+	--kraken-surface: #fff;
+
+	max-width: 1160px;
+}
+
+/* --- Hero band: the one loud element ------------------------------------- */
+
+.kraken-hero {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	flex-wrap: wrap;
+	margin: 16px 0 20px;
+	padding: 26px 30px;
+	border-radius: 14px;
+	background:
+		radial-gradient(120% 180% at 100% 0%, rgba(45, 212, 191, 0.16) 0%, transparent 45%),
+		linear-gradient(115deg, #0a1c2e 0%, #0e3a52 62%, #11565e 100%);
+	color: #fff;
+}
+
+.kraken-hero__text h1 {
+	margin: 0 0 4px;
+	color: #fff;
+	font-size: 24px;
+	font-weight: 650;
+	letter-spacing: 0.01em;
+	padding: 0;
+}
+
+.kraken-hero__text p {
+	margin: 0;
+	color: rgba(255, 255, 255, 0.78);
+	font-size: 13.5px;
+}
+
+.kraken-hero__actions {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+}
+
+.kraken-hero__notice {
+	color: rgba(255, 255, 255, 0.7);
+	font-size: 12px;
+	max-width: 260px;
+}
+
+.kraken-hero__button {
+	display: inline-block;
+	padding: 7px 16px;
+	border: 1px solid rgba(255, 255, 255, 0.35);
+	border-radius: 7px;
+	background: rgba(255, 255, 255, 0.1);
+	color: #fff;
+	font-size: 13px;
+	font-weight: 600;
+	text-decoration: none;
+	transition: background 0.15s ease;
+}
+
+.kraken-hero__button:hover,
+.kraken-hero__button:focus {
+	background: rgba(255, 255, 255, 0.22);
+	color: #fff;
+}
+
+.kraken-hero__button:focus-visible {
+	outline: 2px solid #fff;
+	outline-offset: 2px;
+}
+
+/* --- Cards ---------------------------------------------------------------- */
+
+.kraken-card {
+	padding: 20px 22px;
+	border: 1px solid var(--kraken-hairline);
+	border-radius: 10px;
+	background: var(--kraken-surface);
+	box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+.kraken-card__title {
+	margin: 0 0 2px;
+	color: var(--kraken-ink);
+	font-size: 14px;
+	font-weight: 650;
+	padding: 0;
+}
+
+.kraken-card__sub {
+	margin: 0 0 14px;
+	color: var(--kraken-ink-3);
+	font-size: 12px;
+}
+
+.kraken-card__placeholder {
+	margin: 18px 0;
+	color: var(--kraken-ink-3);
+	font-size: 13px;
+}
+
+.kraken-dash__grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 16px;
+}
+
+.kraken-card--span2 {
+	grid-column: 1 / -1;
+}
+
+/* --- Stat tiles ------------------------------------------------------------ */
+
+.kraken-tiles {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+	gap: 16px;
+	margin-bottom: 16px;
+}
+
+.kraken-tile {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 18px 20px;
+	border: 1px solid var(--kraken-hairline);
+	border-radius: 10px;
+	background: var(--kraken-surface);
+	box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+.kraken-tile--ring {
+	flex-direction: row;
+	align-items: center;
+	gap: 14px;
+}
+
+.kraken-tile__ringside {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.kraken-tile__label {
+	color: var(--kraken-ink-2);
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.kraken-tile__value {
+	color: var(--kraken-ink);
+	font-size: 28px;
+	font-weight: 650;
+	line-height: 1.05;
+}
+
+.kraken-tile__value small {
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--kraken-ink-2);
+}
+
+.kraken-tile__value--muted {
+	color: var(--kraken-ink-3);
+}
+
+.kraken-tile__hint {
+	color: var(--kraken-ink-3);
+	font-size: 11.5px;
+}
+
+.kraken-tile__bands {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 12px;
+	margin-top: 2px;
+}
+
+/* Band chip: colored dot + ink text — color never carries meaning alone. */
+.kraken-band {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	color: var(--kraken-ink-2);
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.kraken-band i {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--kraken-ink-3);
+}
+
+.kraken-band--high i { background: var(--kraken-high); }
+.kraken-band--medium i { background: var(--kraken-medium); }
+.kraken-band--low i { background: var(--kraken-low); }
+
+/* Coverage meter: accent fill on a lighter step of the same ramp. */
+.kraken-meter {
+	display: block;
+	height: 8px;
+	margin-top: 4px;
+	border-radius: 4px;
+	background: var(--kraken-track);
+	overflow: hidden;
+}
+
+.kraken-meter span {
+	display: block;
+	height: 100%;
+	border-radius: 4px;
+	background: var(--kraken-accent);
+}
+
+/* Band split: stacked bar with 2px surface gaps between segments. */
+.kraken-splitbar {
+	display: flex;
+	gap: 2px;
+	height: 10px;
+	margin-top: 4px;
+	border-radius: 5px;
+	overflow: hidden;
+}
+
+.kraken-splitbar__seg { min-width: 3px; }
+.kraken-splitbar__seg--high { background: var(--kraken-high); }
+.kraken-splitbar__seg--medium { background: var(--kraken-medium); }
+.kraken-splitbar__seg--low { background: var(--kraken-low); }
+
+/* Delta chip: direction × up-is-good. */
+.kraken-delta {
+	font-weight: 650;
+	font-size: 13px;
+}
+
+.kraken-delta--up { color: var(--kraken-up); }
+.kraken-delta--down { color: var(--kraken-down); }
+
+.kraken-tile .kraken-delta {
+	font-size: 26px;
+}
+
+/* --- Ring meter -------------------------------------------------------------- */
+
+.kraken-ring {
+	--kraken-band-color: var(--kraken-ink-3);
+	width: 92px;
+	height: 92px;
+	flex-shrink: 0;
+}
+
+.kraken-ring--high { --kraken-band-color: var(--kraken-high); }
+.kraken-ring--medium { --kraken-band-color: var(--kraken-medium); }
+.kraken-ring--low { --kraken-band-color: var(--kraken-low); }
+
+.kraken-ring__track,
+.kraken-ring__arc {
+	fill: none;
+	stroke-width: 10;
+}
+
+/* Track is a light step of the arc's own color, so state reads across the ring. */
+.kraken-ring__track {
+	stroke: color-mix(in srgb, var(--kraken-band-color) 16%, #fff);
+}
+
+.kraken-ring__arc {
+	stroke: var(--kraken-band-color);
+	stroke-linecap: round;
+}
+
+.kraken-ring__value {
+	fill: var(--kraken-ink);
+	font-size: 26px;
+	font-weight: 650;
+	text-anchor: middle;
+	dominant-baseline: middle;
+}
+
+.kraken-ring__cap {
+	fill: var(--kraken-ink-3);
+	font-size: 9px;
+	font-weight: 600;
+	text-anchor: middle;
+}
+
+/* --- Charts (shared) ---------------------------------------------------------- */
+
+.kraken-histogram,
+.kraken-trendline {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+
+.kraken-chart__baseline {
+	stroke: #c3c4c7;
+	stroke-width: 1;
+}
+
+.kraken-chart__grid {
+	stroke: var(--kraken-grid);
+	stroke-width: 1;
+}
+
+.kraken-chart__bar {
+	fill: var(--kraken-accent);
+	transition: fill 0.12s ease;
+}
+
+.kraken-chart__hit {
+	fill: transparent;
+	pointer-events: all;
+}
+
+/* Marks and labels let events fall through to the hit layer beneath them. */
+.kraken-chart__bar,
+.kraken-chart__cap,
+.kraken-chart__tick,
+.kraken-chart__dot,
+.kraken-chart__area,
+.kraken-chart__line,
+.kraken-chart__endlabel {
+	pointer-events: none;
+}
+
+.kraken-chart__hit:hover + .kraken-chart__bar,
+.kraken-chart__hit:hover ~ .kraken-chart__bar {
+	fill: var(--kraken-accent-dark);
+}
+
+.kraken-chart__cap {
+	fill: var(--kraken-ink-2);
+	font-size: 11px;
+	font-weight: 600;
+	text-anchor: middle;
+	font-variant-numeric: tabular-nums;
+}
+
+.kraken-chart__tick {
+	fill: var(--kraken-ink-3);
+	font-size: 10.5px;
+	text-anchor: middle;
+	font-variant-numeric: tabular-nums;
+}
+
+.kraken-chart__tick--y {
+	text-anchor: end;
+}
+
+.kraken-chart__bandstrip--high { fill: var(--kraken-high); }
+.kraken-chart__bandstrip--medium { fill: var(--kraken-medium); }
+.kraken-chart__bandstrip--low { fill: var(--kraken-low); }
+
+.kraken-chart__bandlabel {
+	fill: var(--kraken-ink-2);
+	font-size: 10px;
+	font-weight: 600;
+	text-anchor: middle;
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+}
+
+.kraken-chart__area {
+	fill: var(--kraken-accent);
+	opacity: 0.08;
+}
+
+.kraken-chart__line {
+	fill: none;
+	stroke: var(--kraken-accent);
+	stroke-width: 2;
+	stroke-linejoin: round;
+	stroke-linecap: round;
+}
+
+/* Marker with a 2px surface ring so it reads where it crosses the line. */
+.kraken-chart__dot {
+	fill: var(--kraken-accent);
+	stroke: var(--kraken-surface);
+	stroke-width: 2;
+}
+
+.kraken-chart__endlabel {
+	fill: var(--kraken-ink);
+	font-size: 12px;
+	font-weight: 650;
+	font-variant-numeric: tabular-nums;
+}
+
+/* --- Dimension meters ------------------------------------------------------------ */
+
+.kraken-dims {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.kraken-dims__row {
+	display: grid;
+	grid-template-columns: 170px 1fr 44px;
+	align-items: center;
+	gap: 12px;
+}
+
+.kraken-dims__name {
+	color: var(--kraken-ink-2);
+	font-size: 12.5px;
+	font-weight: 600;
+}
+
+.kraken-dims__track {
+	display: block;
+	height: 8px;
+	border-radius: 4px;
+	background: var(--kraken-track);
+	overflow: hidden;
+}
+
+.kraken-dims__fill {
+	display: block;
+	height: 100%;
+	border-radius: 4px;
+	background: var(--kraken-accent);
+}
+
+.kraken-dims__value {
+	color: var(--kraken-ink);
+	font-size: 12.5px;
+	font-weight: 650;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+/* --- Post lists ------------------------------------------------------------------- */
+
+.kraken-postlist {
+	margin: 0;
+}
+
+.kraken-postlist__row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin: 0;
+	padding: 9px 0;
+	border-top: 1px solid var(--kraken-grid);
+}
+
+.kraken-postlist__row:first-child {
+	border-top: 0;
+}
+
+.kraken-postlist__title {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 13px;
+	font-weight: 500;
+	text-decoration: none;
+}
+
+.kraken-postlist__meta {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	flex-shrink: 0;
+}
+
+.kraken-postlist__when {
+	color: var(--kraken-ink-3);
+	font-size: 11.5px;
+	min-width: 74px;
+	text-align: right;
+}
+
+/* Score pill (shared look with the posts-list column). */
+.kraken-dash .kraken-semantics-pill {
+	display: inline-block;
+	min-width: 2.6em;
+	padding: 2px 8px;
+	border-radius: 999px;
+	color: #fff;
+	font-weight: 600;
+	font-size: 12px;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+}
+
+.kraken-dash .kraken-semantics-pill--high { background: var(--kraken-high); }
+.kraken-dash .kraken-semantics-pill--medium { background: var(--kraken-medium); }
+.kraken-dash .kraken-semantics-pill--low { background: var(--kraken-low); }
+
+/* --- Empty state --------------------------------------------------------------------- */
+
+.kraken-empty h2 {
+	margin-top: 0;
+}
+
+.kraken-empty ol {
+	margin: 12px 0 4px 20px;
+}
+
+.kraken-empty li {
+	margin-bottom: 8px;
+	color: var(--kraken-ink-2);
+	font-size: 13px;
+}
+
+/* --- Tooltip ------------------------------------------------------------------------- */
+
+.kraken-dash__tooltip {
+	position: fixed;
+	z-index: 99999;
+	max-width: 260px;
+	padding: 6px 10px;
+	border-radius: 6px;
+	background: var(--kraken-ink);
+	color: #fff;
+	font-size: 12px;
+	line-height: 1.4;
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity 0.1s ease;
+}
+
+.kraken-dash__tooltip.is-visible {
+	opacity: 1;
+}
+
+/* --- Settings screen ------------------------------------------------------------------- */
+
+.kraken-settings {
+	max-width: 860px;
+}
+
+.kraken-settings__heading {
+	font-size: 22px;
+	font-weight: 650;
+}
+
+.kraken-settings__card {
+	margin-bottom: 16px;
+}
+
+.kraken-settings__row {
+	display: grid;
+	grid-template-columns: 180px 1fr;
+	gap: 8px 20px;
+	padding: 14px 0;
+	border-top: 1px solid var(--kraken-grid);
+}
+
+.kraken-settings__row:first-of-type {
+	border-top: 0;
+}
+
+.kraken-settings__rowlabel {
+	color: var(--kraken-ink);
+	font-size: 13px;
+	font-weight: 600;
+	padding-top: 2px;
+}
+
+.kraken-settings__rowbody .description {
+	margin-top: 6px;
+}
+
+.kraken-checks {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px 16px;
+}
+
+.kraken-check {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 13px;
+	color: var(--kraken-ink-2);
+}
+
+/* Provider cards */
+.kraken-providers {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 12px;
+	margin-top: 4px;
+}
+
+.kraken-provider {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 14px 16px;
+	border: 1px solid var(--kraken-hairline);
+	border-radius: 10px;
+	background: var(--kraken-surface);
+	cursor: pointer;
+	transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.kraken-provider:hover {
+	border-color: var(--kraken-accent);
+}
+
+.kraken-provider.is-selected {
+	border-color: var(--kraken-accent);
+	box-shadow: 0 0 0 1px var(--kraken-accent), 0 1px 2px rgba(16, 24, 40, 0.06);
+}
+
+.kraken-provider__head {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.kraken-provider__name {
+	flex: 1;
+	color: var(--kraken-ink);
+	font-size: 13px;
+	font-weight: 650;
+}
+
+.kraken-provider__fields {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.kraken-provider__field {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+}
+
+.kraken-provider__field > span {
+	color: var(--kraken-ink-2);
+	font-size: 11.5px;
+	font-weight: 600;
+}
+
+.kraken-provider__field input {
+	width: 100%;
+}
+
+.kraken-provider .description {
+	font-size: 11.5px;
+	color: var(--kraken-ink-3);
+	overflow-wrap: anywhere;
+}
+
+/* Status chips */
+.kraken-chip {
+	padding: 2px 8px;
+	border-radius: 999px;
+	font-size: 11px;
+	font-weight: 600;
+}
+
+.kraken-chip--ready {
+	background: color-mix(in srgb, var(--kraken-high) 12%, #fff);
+	color: var(--kraken-high);
+}
+
+.kraken-chip--missing {
+	background: color-mix(in srgb, var(--kraken-medium) 12%, #fff);
+	color: var(--kraken-medium);
+}
+
+.kraken-settings__mcp-note {
+	margin-top: 14px;
+}
+
+/* Threshold band preview */
+.kraken-settings__thresholds {
+	display: flex;
+	gap: 18px;
+	margin: 0 0 10px;
+}
+
+.kraken-settings__thresholds input {
+	width: 70px;
+}
+
+.kraken-bandpreview {
+	display: flex;
+	gap: 2px;
+	height: 26px;
+	max-width: 460px;
+	border-radius: 6px;
+	overflow: hidden;
+}
+
+.kraken-bandpreview__seg {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 5px;
+	min-width: 0;
+	color: #fff;
+	font-size: 11px;
+	font-weight: 600;
+	overflow: hidden;
+	white-space: nowrap;
+	transition: width 0.15s ease;
+}
+
+.kraken-bandpreview__seg--low { background: var(--kraken-low); }
+.kraken-bandpreview__seg--medium { background: var(--kraken-medium); }
+.kraken-bandpreview__seg--high { background: var(--kraken-high); }
+
+.kraken-settings__badge-preview {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-top: 10px;
+}
+
+.kraken-settings__badge-preview .kraken-semantics-badge {
+	margin: 0;
+}
+
+@media (max-width: 700px) {
+	.kraken-settings__row {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* --- Responsive & a11y ----------------------------------------------------------------- */
+
+@media (max-width: 960px) {
+	.kraken-dash__grid {
+		grid-template-columns: 1fr;
+	}
+
+	.kraken-dims__row {
+		grid-template-columns: 130px 1fr 40px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.kraken-dash *,
+	.kraken-dash *::before,
+	.kraken-dash *::after {
+		transition: none !important;
+	}
+}

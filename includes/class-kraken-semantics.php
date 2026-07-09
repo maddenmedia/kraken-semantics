@@ -59,6 +59,13 @@ final class Kraken_Semantics {
 	public $settings;
 
 	/**
+	 * Insights dashboard (admin only).
+	 *
+	 * @var Kraken_Semantics_Dashboard|null
+	 */
+	public $dashboard;
+
+	/**
 	 * Editor meta box and list column (admin only).
 	 *
 	 * @var Kraken_Semantics_Admin|null
@@ -89,8 +96,9 @@ final class Kraken_Semantics {
 
 		// Admin-only components stay unloaded on the front end.
 		if ( is_admin() ) {
-			$this->settings = new Kraken_Semantics_Settings( $this->scanner );
-			$this->admin    = new Kraken_Semantics_Admin( $this->scanner );
+			$this->dashboard = new Kraken_Semantics_Dashboard( $this->scanner );
+			$this->settings  = new Kraken_Semantics_Settings( $this->scanner );
+			$this->admin     = new Kraken_Semantics_Admin( $this->scanner );
 		}
 
 		// WP-CLI commands (class is only loaded in CLI context).

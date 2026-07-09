@@ -25,6 +25,7 @@ $kraken_semantics_meta_keys = array(
 	'_kraken_semantics_model',
 	'_kraken_semantics_scanned_at',
 	'_kraken_semantics_reviewed',
+	'_kraken_semantics_history',
 );
 
 foreach ( $kraken_semantics_meta_keys as $kraken_semantics_meta_key ) {

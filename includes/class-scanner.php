@@ -38,6 +38,8 @@ class Kraken_Semantics_Scanner {
 	public function providers() {
 		$providers = array(
 			'claude' => new Kraken_Semantics_Provider_Claude(),
+			'openai' => new Kraken_Semantics_Provider_OpenAI(),
+			'gemini' => new Kraken_Semantics_Provider_Gemini(),
 		);
 
 		/**

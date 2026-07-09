@@ -81,7 +81,7 @@ class Kraken_Semantics_Provider_OpenAI implements Kraken_Semantics_Provider {
 		if ( ! $this->is_configured() ) {
 			return new WP_Error(
 				'kraken_semantics_no_api_key',
-				__( 'No OpenAI API key is configured. Add one under Settings → Kraken Semantics, or define KRAKEN_SEMANTICS_OPENAI_API_KEY in wp-config.php.', 'kraken-semantics' )
+				__( 'No OpenAI API key is configured. Add one under Kraken Semantics → Settings, or define KRAKEN_SEMANTICS_OPENAI_API_KEY in wp-config.php.', 'kraken-semantics' )
 			);
 		}
 

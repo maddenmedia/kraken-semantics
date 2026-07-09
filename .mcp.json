@@ -1,0 +1,13 @@
+{
+	"mcpServers": {
+		"kraken-semantics": {
+			"command": "node",
+			"args": ["mcp/server.mjs"],
+			"env": {
+				"KRAKEN_WP_URL": "${KRAKEN_WP_URL:-http://localhost:8080}",
+				"KRAKEN_WP_USER": "${KRAKEN_WP_USER:-admin}",
+				"KRAKEN_WP_APP_PASSWORD": "${KRAKEN_WP_APP_PASSWORD:-}"
+			}
+		}
+	}
+}

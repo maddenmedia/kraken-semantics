@@ -124,6 +124,8 @@ function kraken_semantics_get_score( $post = null ) {
  *     @type string               $model      Model identifier, when applicable.
  *     @type string               $scanned_at ISO 8601 timestamp (GMT).
  *     @type bool                 $reviewed   Whether a human has reviewed the score.
+ *     @type array<int,array>     $history    Past score events, oldest first.
+ *     @type float|null           $delta      Change vs the previous score event.
  * }
  */
 function kraken_semantics_get_score_data( $post = null ) {
