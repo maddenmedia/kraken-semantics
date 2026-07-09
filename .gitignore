@@ -1,0 +1,28 @@
+# Operating System
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE and editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Dependencies
+vendor/
+composer.lock
+node_modules/
+package-lock.json
+yarn.lock
+
+# WordPress
+wp-config-local.php
+wp-cli.local.yml
+
+# Development
+.env
+.env.local
+*.log
